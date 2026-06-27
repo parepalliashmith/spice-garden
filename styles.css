@@ -230,6 +230,18 @@ body.can-revenue .perm-revenue{display:block}
 
 .hidden{display:none}
 
+/* ---------- voice input ---------- */
+.voice-wrap{position:relative;display:block}
+.voice-wrap input,.voice-wrap textarea{width:100%;padding-right:44px}
+.mic-btn{
+  position:absolute;top:7px;right:7px;border:none;background:transparent;
+  font-size:18px;line-height:1;padding:4px;border-radius:8px;cursor:pointer;
+}
+.voice-wrap textarea ~ .mic-btn{top:9px}
+.mic-btn:hover{background:var(--line)}
+.mic-btn.listening{animation:micpulse 1s infinite;background:#ffe3d6}
+@keyframes micpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.25)}}
+
 /* ---------- icon button (dark mode toggle) ---------- */
 .icon-btn{
   border:1px solid var(--line);background:var(--card);border-radius:999px;

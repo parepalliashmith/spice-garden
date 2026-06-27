@@ -770,6 +770,59 @@ if("serviceWorker" in navigator && location.protocol.startsWith("http")){
 }
 
 /* ============================================================
+   VOICE INPUT — speak to fill fields (Web Speech API, Chrome)
+   ============================================================ */
+const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+const NUM_WORDS = {
+  zero:"0",oh:"0",o:"0",one:"1",two:"2",to:"2",too:"2",three:"3",four:"4",for:"4",
+  five:"5",six:"6",seven:"7",eight:"8",ate:"8",nine:"9",
+  "शून्य":"0","एक":"1","दो":"2","तीन":"3","चार":"4","पांच":"5","पाँच":"5","छह":"6","सात":"7","आठ":"8","नौ":"9","नो":"9"
+};
+function toDigits(s){
+  return s.toLowerCase().split(/[\s-]+/)
+    .map(w => NUM_WORDS[w] !== undefined ? NUM_WORDS[w] : w)
+    .join("").replace(/\D/g, "");
+}
+function attachVoice(){
+  if(!SpeechRec) return;                       // browser doesn't support it → no mic buttons
+  $$("[data-voice]").forEach(field=>{
+    if(field.dataset.voiceReady) return;       // don't double-attach
+    field.dataset.voiceReady = "1";
+    const wrap = document.createElement("span");
+    wrap.className = "voice-wrap";
+    field.parentNode.insertBefore(wrap, field);
+    wrap.appendChild(field);
+    const mic = document.createElement("button");
+    mic.type = "button"; mic.className = "mic-btn"; mic.title = "Speak to fill";
+    mic.textContent = "🎤";
+    wrap.appendChild(mic);
+    const mode = field.dataset.voice;          // "" or "number"
+    mic.onclick = ()=> listen(field, mode, mic);
+  });
+}
+let activeRec = null;
+function listen(field, mode, mic){
+  if(activeRec){ try{ activeRec.stop(); }catch(_){} activeRec=null; return; }
+  const rec = new SpeechRec();
+  rec.lang = lang === "hi" ? "hi-IN" : "en-US";
+  rec.interimResults = false; rec.maxAlternatives = 1;
+  activeRec = rec;
+  mic.classList.add("listening");
+  field.focus();
+  rec.onresult = e=>{
+    let text = (e.results[0][0].transcript || "").trim();
+    if(mode === "number") text = toDigits(text);
+    if(field.tagName === "TEXTAREA" && field.value.trim()) field.value += " " + text;
+    else field.value = text;
+    field.dispatchEvent(new Event("input", { bubbles:true }));
+  };
+  const done = ()=>{ mic.classList.remove("listening"); activeRec=null; };
+  rec.onend = done;
+  rec.onerror = ev=>{ done(); if(ev.error==="not-allowed") toast("🎤 Allow microphone access to use voice"); };
+  try{ rec.start(); }catch(_){ done(); }
+}
+
+/* ============================================================
    INIT
    ============================================================ */
 applyLang();
@@ -780,3 +833,4 @@ renderCart();
 initReserveDefaults();
 refreshAdminCounts();
 updateStickyCart();
+attachVoice();

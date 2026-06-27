@@ -61,8 +61,8 @@
       <h2 data-i18n="reserve.title">Book a Table</h2>
       <p class="muted" data-i18n="reserve.sub">Reserve your spot and we'll have it ready.</p>
       <form id="reserveForm" class="form">
-        <label><span data-i18n="f.name">Name</span><input name="name" required placeholder="Your name" /></label>
-        <label><span data-i18n="f.phone">Phone</span><input name="phone" required placeholder="Mobile number" /></label>
+        <label><span data-i18n="f.name">Name</span><input name="name" required placeholder="Your name" data-voice /></label>
+        <label><span data-i18n="f.phone">Phone</span><input name="phone" required placeholder="Mobile number" data-voice="number" /></label>
         <div class="row">
           <label><span data-i18n="f.date">Date</span><input name="date" type="date" required /></label>
           <label><span data-i18n="f.time">Time</span><input name="time" type="time" required /></label>
@@ -74,7 +74,7 @@
             <option>5</option><option>6</option><option>7</option><option>8+</option>
           </select>
         </label>
-        <label><span data-i18n="f.requests">Special requests</span><textarea name="notes" placeholder="Birthday, allergies, seating preference..."></textarea></label>
+        <label><span data-i18n="f.requests">Special requests</span><textarea name="notes" placeholder="Birthday, allergies, seating preference..." data-voice></textarea></label>
         <button class="btn primary" type="submit" data-i18n="reserve.btn">Confirm Reservation</button>
       </form>
     </div>
@@ -234,8 +234,8 @@
 
       <!-- delivery address (only for Home delivery) -->
       <div id="addressBlock" class="hidden">
-        <label><span data-i18n="f.address">Delivery address</span><textarea name="address" placeholder="House / flat, street, area"></textarea></label>
-        <label><span data-i18n="f.landmark">Landmark</span><input name="landmark" placeholder="Nearby landmark (optional)" /></label>
+        <label><span data-i18n="f.address">Delivery address</span><textarea name="address" placeholder="House / flat, street, area" data-voice></textarea></label>
+        <label><span data-i18n="f.landmark">Landmark</span><input name="landmark" placeholder="Nearby landmark (optional)" data-voice /></label>
       </div>
 
       <!-- promo -->
@@ -259,8 +259,8 @@
       <!-- bill breakdown -->
       <div class="bill" id="billBreakdown"></div>
 
-      <label><span data-i18n="f.name">Name</span><input name="name" required placeholder="Your name" /></label>
-      <label><span data-i18n="f.phone">Phone</span><input name="phone" required placeholder="Mobile number" /></label>
+      <label><span data-i18n="f.name">Name</span><input name="name" required placeholder="Your name" data-voice /></label>
+      <label><span data-i18n="f.phone">Phone</span><input name="phone" required placeholder="Mobile number" data-voice="number" /></label>
       <label><span data-i18n="f.pay">Payment</span>
         <select name="pay" id="paySelect">
           <option value="online">Pay Online (UPI / Card)</option>
