@@ -260,6 +260,7 @@ const can = {
   manageMenu:  role => role === "superadmin" || role === "admin",
   deleteItems: role => role === "superadmin" || role === "admin",   // delete orders/reservations
   manageUsers: role => role === "superadmin" || role === "admin",
+  viewRevenue: role => role === "superadmin" || role === "admin",   // amounts/totals
   // who a given role is allowed to create / remove
   managesRole: (role, target) =>
     role === "superadmin" ? true :                       // super admin manages everyone
@@ -292,7 +293,7 @@ $("#adminLoginForm").onsubmit = e=>{
 
 $("#logoutBtn").onclick = ()=>{
   me = null;
-  document.body.classList.remove("can-menu","can-users");
+  document.body.classList.remove("can-menu","can-users","can-revenue");
   $("#adminDash").classList.add("hidden");
   $("#adminLogin").classList.remove("hidden");
 };
@@ -304,8 +305,9 @@ function applyPermissions(){
   tag.textContent = ROLE_LABEL[me.role];
   tag.className = "role-tag " + me.role;
 
-  document.body.classList.toggle("can-menu",  can.manageMenu(me.role));
-  document.body.classList.toggle("can-users", can.manageUsers(me.role));
+  document.body.classList.toggle("can-menu",    can.manageMenu(me.role));
+  document.body.classList.toggle("can-users",   can.manageUsers(me.role));
+  document.body.classList.toggle("can-revenue", can.viewRevenue(me.role));
 
   // if the active tab is now hidden for this role, fall back to Orders
   const active = $(".tab.active");
@@ -332,6 +334,17 @@ function renderAdmin(){ renderOrders(); renderReservations(); renderMenuEditor()
 function refreshAdminCounts(){
   $("#ordersBadge").textContent = orders.filter(o=>o.status==="new").length;
   $("#resBadge").textContent    = reservations.filter(r=>r.status==="new").length;
+  renderStats();
+}
+
+/* order.id is Date.now() at creation — use it to tell which orders are from today */
+function renderStats(){
+  const startOfToday = new Date(); startOfToday.setHours(0,0,0,0);
+  const todays = orders.filter(o => o.id >= startOfToday.getTime());
+
+  $("#statOrdersToday").textContent = todays.length;                                  // count — everyone
+  $("#statRevToday").textContent    = rupee(todays.reduce((s,o)=>s+o.total, 0));      // amount — admins only
+  $("#statRevTotal").textContent    = rupee(orders.reduce((s,o)=>s+o.total, 0));      // total — admins only
 }
 
 function renderOrders(){

@@ -89,6 +89,22 @@
         </div>
         <button class="btn ghost" id="logoutBtn">Log out</button>
       </div>
+
+      <div class="stats">
+        <div class="stat">
+          <div class="stat-label">Orders today</div>
+          <div class="stat-value" id="statOrdersToday">0</div>
+        </div>
+        <div class="stat perm-revenue">
+          <div class="stat-label">Today's revenue</div>
+          <div class="stat-value money" id="statRevToday">₹0</div>
+        </div>
+        <div class="stat perm-revenue">
+          <div class="stat-label">Total revenue</div>
+          <div class="stat-value money" id="statRevTotal">₹0</div>
+        </div>
+      </div>
+
       <div class="tabs">
         <button class="tab active" data-tab="orders">Orders <span class="badge" id="ordersBadge">0</span></button>
         <button class="tab" data-tab="reservations">Reservations <span class="badge" id="resBadge">0</span></button>

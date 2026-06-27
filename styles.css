@@ -168,6 +168,19 @@ button{font-family:inherit;cursor:pointer}
 body.can-menu  .perm-menu  {display:inline-block}
 body.can-users .perm-users {display:inline-block}
 
+/* ---------- stats bar ---------- */
+.stats{display:flex;gap:14px;flex-wrap:wrap;margin:8px 0 22px}
+.stat{
+  flex:1;min-width:150px;background:#fff;border:1px solid var(--line);
+  border-radius:14px;padding:16px 18px;box-shadow:var(--shadow);
+}
+.stat-label{color:var(--muted);font-size:13px;font-weight:600;margin-bottom:6px}
+.stat-value{font-size:28px;font-weight:800}
+.stat-value.money{color:var(--green)}
+/* revenue cards only for admin / super admin */
+.perm-revenue{display:none}
+body.can-revenue .perm-revenue{display:block}
+
 /* ---------- payment modal ---------- */
 .modal-overlay{
   position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;
