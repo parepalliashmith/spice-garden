@@ -21,16 +21,51 @@
     <button class="nav-btn active" data-view="menu"    data-i18n="nav.menu">Menu</button>
     <button class="nav-btn"        data-view="reserve" data-i18n="nav.reserve">Reserve</button>
     <button class="nav-btn"        data-view="orders"  data-i18n="nav.orders">My Orders</button>
-    <button class="nav-btn"        data-view="admin"   data-i18n="nav.admin">Admin</button>
+    <button class="nav-btn team-only" data-view="admin" data-i18n="nav.admin">Admin</button>
   </nav>
   <button class="icon-btn" id="installBtn" title="Install app" aria-label="Install app" hidden>📲</button>
   <button class="icon-btn" id="langBtn" title="Change language" aria-label="Change language">EN</button>
   <button class="icon-btn" id="themeBtn" title="Toggle dark mode" aria-label="Toggle dark mode">🌙</button>
+  <button class="icon-btn" id="sessionBtn" title="Account" aria-label="Account" hidden>👤</button>
   <button class="cart-pill" id="cartPill" aria-label="View cart">🛒 <span id="cartCount">0</span></button>
 </header>
 
 <!-- offline banner -->
 <div id="offlineBar" class="offline-bar" role="status">📡 You're offline — showing saved data</div>
+
+<!-- ===================== LOGIN GATE (phone + OTP) ===================== -->
+<div id="authGate" class="auth-gate">
+  <div class="auth-card">
+    <div class="auth-logo">🍽️ <span>Spice Garden</span></div>
+    <p class="muted small">Login to continue</p>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" data-role="customer">🙋 Customer</button>
+      <button class="auth-tab" data-role="staff">🧑‍🍳 Staff</button>
+    </div>
+
+    <!-- step 1: phone -->
+    <div id="authPhoneStep" class="auth-step">
+      <label class="auth-label">Mobile number</label>
+      <div class="auth-phone">
+        <span class="cc">+91</span>
+        <input id="authPhone" type="tel" maxlength="10" inputmode="numeric" placeholder="10-digit number" autocomplete="off" />
+      </div>
+      <button class="btn primary full" id="sendOtpBtn">Send OTP</button>
+      <p class="auth-msg" id="authMsg"></p>
+    </div>
+
+    <!-- step 2: otp -->
+    <div id="authOtpStep" class="auth-step hidden">
+      <label class="auth-label">Enter the 6-digit code sent to <strong id="otpToPhone"></strong></label>
+      <input id="authOtp" type="tel" maxlength="6" inputmode="numeric" placeholder="••••••" class="otp-input" autocomplete="one-time-code" />
+      <div class="demo-otp" id="demoOtp"></div>
+      <button class="btn primary full" id="verifyOtpBtn">Verify &amp; Continue</button>
+      <button class="btn ghost full" id="otpBackBtn" style="margin-top:8px">← Change number</button>
+      <p class="auth-msg" id="authMsg2"></p>
+    </div>
+  </div>
+</div>
 
 <main>
   <!-- ===================== CUSTOMER: MENU ===================== -->
@@ -89,23 +124,7 @@
 
   <!-- ===================== ADMIN ===================== -->
   <section id="view-admin" class="view">
-    <div class="panel narrow" id="adminLogin">
-      <h2 data-i18n="admin.login">Staff Login</h2>
-      <p class="muted">Sign in as Super Admin, Admin, or Staff.</p>
-      <form id="adminLoginForm" class="form">
-        <label>Username<input name="user" required placeholder="Username" autocomplete="off" /></label>
-        <label>Password<input name="pw" type="password" required placeholder="Password" /></label>
-        <button class="btn primary" type="submit">Log in</button>
-      </form>
-      <div class="login-hint">
-        <strong>Default logins</strong>
-        <div>👑 Super Admin — <code>superadmin</code> / <code>super123</code></div>
-        <div>🛠️ Admin — <code>admin</code> / <code>admin123</code></div>
-        <div>🧑‍🍳 Staff — <code>staff</code> / <code>staff123</code></div>
-      </div>
-    </div>
-
-    <div id="adminDash" class="hidden">
+    <div id="adminDash">
       <div class="admin-head">
         <div>
           <h2>Dashboard</h2>
@@ -155,15 +174,17 @@
       </div>
 
       <div class="tab-panel" id="tab-users">
+        <div id="pendingBox"></div>
+        <h4 class="users-h">Add a team member by phone</h4>
         <form id="userForm" class="form inline-form">
-          <input name="user" required placeholder="Username" autocomplete="off" />
-          <input name="pw" required placeholder="Password" />
+          <input name="phone" required placeholder="Mobile number (10 digits)" maxlength="10" inputmode="numeric" autocomplete="off" />
+          <input name="name" placeholder="Name (optional)" autocomplete="off" />
           <select name="role" id="newUserRole">
             <option value="staff">Staff</option>
             <option value="admin">Admin</option>
             <option value="superadmin">Super Admin</option>
           </select>
-          <button class="btn primary" type="submit">Add user</button>
+          <button class="btn primary" type="submit">Add by phone</button>
         </form>
         <div id="userList" class="menu-edit-list"></div>
       </div>
@@ -192,7 +213,7 @@
   <button class="bn-btn active" data-view="menu"><span class="bn-ico">🍽️</span><span data-i18n="nav.menu">Menu</span></button>
   <button class="bn-btn" data-view="reserve"><span class="bn-ico">📅</span><span data-i18n="nav.reserve">Reserve</span></button>
   <button class="bn-btn" data-view="orders"><span class="bn-ico">📦</span><span data-i18n="nav.orders">My Orders</span></button>
-  <button class="bn-btn" data-view="admin"><span class="bn-ico">🛠️</span><span data-i18n="nav.admin">Admin</span></button>
+  <button class="bn-btn team-only" data-view="admin"><span class="bn-ico">🛠️</span><span data-i18n="nav.admin">Admin</span></button>
 </nav>
 
 <!-- ===================== STICKY CART BAR ===================== -->

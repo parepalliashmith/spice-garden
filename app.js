@@ -802,28 +802,143 @@ const can={
   viewRevenue:r=>r==="superadmin"||r==="admin",
   managesRole:(r,t)=> r==="superadmin"?true : r==="admin"?t==="staff":false,
 };
+/* ---- users are now phone-based: { phone, role, status, name } ---- */
+/* seed one Super Admin to bootstrap (change/replace from Manage Users) */
 const DEFAULT_USERS=[
-  {user:"superadmin",pw:"super123",role:"superadmin"},
-  {user:"admin",pw:"admin123",role:"admin"},
-  {user:"staff",pw:"staff123",role:"staff"},
+  { phone:"9999999999", role:"superadmin", status:"active", name:"Owner" },
 ];
-let users = store.get("sg_users", null) || (store.set("sg_users", DEFAULT_USERS), DEFAULT_USERS);
-let me=null;
+let users = store.get("sg_users", null);
+if(!users || !users[0] || !users[0].phone){   // none, or old username/password format → reseed
+  users = DEFAULT_USERS.map(u=>({...u}));
+  store.set("sg_users", users);
+}
+function saveUsers(){ store.set("sg_users", users); }
+function findUser(phone){ return users.find(u=>u.phone===phone); }
 
-$("#adminLoginForm").onsubmit = e=>{
-  e.preventDefault(); const f=e.target;
-  const found = users.find(u=> u.user.toLowerCase()===f.user.value.trim().toLowerCase() && u.pw===f.pw.value);
-  if(!found){ toast("Wrong username or password"); return; }
-  me=found; f.reset();
-  $("#adminLogin").classList.add("hidden"); $("#adminDash").classList.remove("hidden");
-  applyPermissions(); renderAdmin();
+/* session: who is logged in. role 'customer' for ordinary customers. */
+let session = store.get("sg_session", null);
+let me = null;   // set to the session only when it's a team member (staff/admin/superadmin)
+
+const cleanPhone = s => (s||"").replace(/\D/g,"").slice(-10);
+const validPhone = p => /^\d{10}$/.test(p);
+
+/* ============================================================
+   OTP (DEMO — generates a code and shows it on screen.
+   In production this would be sent by SMS via a backend.)
+   ============================================================ */
+let otpStore = null;   // { phone, code, role, expires }
+function genCode(phone){
+  // deterministic-ish 6 digits from phone + a varying part (no real RNG needed for a demo)
+  const base = (Number(phone.slice(-6)) + (performance.now()|0)) % 1000000;
+  return String(base).padStart(6,"0");
+}
+function sendOtp(phone, intendedRole){
+  const code = genCode(phone);
+  otpStore = { phone, code, role:intendedRole, expires: Date.now()+5*60*1000 };
+  return code;   // demo: returned to show on screen
+}
+function checkOtp(phone, code){
+  if(!otpStore || otpStore.phone!==phone) return false;
+  if(Date.now() > otpStore.expires) return false;
+  return otpStore.code === code;
+}
+
+/* ============================================================
+   LOGIN GATE
+   ============================================================ */
+let authRole = "customer";   // tab choice: customer | staff
+$$(".auth-tab").forEach(t=> t.onclick = ()=>{
+  $$(".auth-tab").forEach(x=>x.classList.remove("active"));
+  t.classList.add("active");
+  authRole = t.dataset.role;
+  showAuthStep("phone");
+  $("#authMsg").textContent=""; $("#authMsg").className="auth-msg";
+});
+function showAuthStep(which){
+  $("#authPhoneStep").classList.toggle("hidden", which!=="phone");
+  $("#authOtpStep").classList.toggle("hidden", which!=="otp");
+}
+function openGate(){ $("#authGate").classList.add("show"); showAuthStep("phone"); }
+function closeGate(){ $("#authGate").classList.remove("show"); }
+
+$("#sendOtpBtn").onclick = ()=>{
+  const phone = cleanPhone($("#authPhone").value);
+  const msg = $("#authMsg");
+  if(!validPhone(phone)){ msg.className="auth-msg bad"; msg.textContent="Enter a valid 10-digit number"; return; }
+  const code = sendOtp(phone, authRole);
+  $("#otpToPhone").textContent = "+91 "+phone;
+  $("#authOtp").value="";
+  $("#demoOtp").className="demo-otp show";
+  $("#demoOtp").innerHTML = `Demo OTP: <strong>${code}</strong><br><span class="muted small">(in production this is texted to the phone)</span>`;
+  $("#authMsg2").textContent=""; $("#authMsg2").className="auth-msg";
+  showAuthStep("otp");
 };
-$("#logoutBtn").onclick = ()=>{
-  me=null; document.body.classList.remove("can-menu","can-users","can-revenue");
-  $("#adminDash").classList.add("hidden"); $("#adminLogin").classList.remove("hidden");
+$("#otpBackBtn").onclick = ()=> showAuthStep("phone");
+$("#verifyOtpBtn").onclick = ()=>{
+  const phone = otpStore ? otpStore.phone : "";
+  const msg = $("#authMsg2");
+  if(!checkOtp(phone, $("#authOtp").value.trim())){ msg.className="auth-msg bad"; msg.textContent="Wrong or expired code"; return; }
+  loginVerified(phone, otpStore.role);
 };
+
+/* called after OTP is confirmed */
+function loginVerified(phone, intendedRole){
+  const u = findUser(phone);
+  if(intendedRole === "staff"){
+    if(u && u.status==="active"){              // approved team member (staff/admin/superadmin)
+      setSession({ phone, role:u.role, name:u.name||"" });
+      toast(`Welcome, ${ROLE_LABEL[u.role]}`);
+    } else if(u && u.status==="pending"){
+      $("#authMsg2").className="auth-msg bad";
+      $("#authMsg2").textContent="Your staff access is awaiting admin approval.";
+    } else {                                   // new staff request → goes on hold
+      users.push({ phone, role:"staff", status:"pending", name:"" });
+      saveUsers();
+      $("#authMsg2").className="auth-msg good";
+      $("#authMsg2").textContent="✅ Request sent! An admin will approve your staff access.";
+    }
+  } else {
+    // customer: if this phone is actually a team member, still let them in as customer
+    setSession({ phone, role:"customer", name:(u&&u.name)||"" });
+    profile = { ...profile, phone };
+    store.set("sg_profile", profile);
+    fillProfile();
+    toast("✅ Logged in — happy ordering!");
+  }
+}
+
+function setSession(s){
+  session = s; store.set("sg_session", session);
+  applySession();
+  closeGate();
+  if(session.role==="customer"){ showView("menu"); maybeShowWelcome(); }
+}
+function applySession(){
+  const team = session && session.role!=="customer";
+  me = team ? session : null;
+  document.body.classList.toggle("is-team", !!team);
+  $("#sessionBtn").hidden = !session;
+  if(team){ applyPermissions(); renderAdmin(); }
+  else {
+    document.body.classList.remove("can-menu","can-users","can-revenue");
+  }
+}
+
+/* account button / dashboard logout → sign out */
+function logout(){
+  if(!confirm("Log out?")) return;
+  session = null; me = null;
+  localStorage.removeItem("sg_session");
+  document.body.classList.remove("is-team","can-menu","can-users","can-revenue");
+  $("#sessionBtn").hidden = true;
+  showView("menu");
+  openGate();
+}
+$("#sessionBtn").onclick = logout;
+$("#logoutBtn").onclick = logout;
+
 function applyPermissions(){
-  $("#meName").textContent=me.user;
+  $("#meName").textContent = me.name ? `${me.name} (${me.phone})` : me.phone;
   const tag=$("#meRole"); tag.textContent=ROLE_LABEL[me.role]; tag.className="role-tag "+me.role;
   document.body.classList.toggle("can-menu", can.manageMenu(me.role));
   document.body.classList.toggle("can-users", can.manageUsers(me.role));
@@ -997,25 +1112,53 @@ function renderMenuEditor(){
    USERS
    ============================================================ */
 const ROLE_EMOJI={superadmin:"👑",admin:"🛠️",staff:"🧑‍🍳"};
+
+/* add a team member directly by phone (super admin → admin/staff, admin → staff) */
 $("#userForm").onsubmit = e=>{
   e.preventDefault(); const f=e.target;
-  const uname=f.user.value.trim(), role=f.role.value;
-  if(!can.managesRole(me.role,role)){ toast("You can't create that role"); return; }
-  if(users.some(u=>u.user.toLowerCase()===uname.toLowerCase())){ toast("Username already exists"); return; }
-  users.push({user:uname,pw:f.pw.value,role}); store.set("sg_users",users);
-  f.reset(); renderUsers(); toast(`${ROLE_LABEL[role]} "${uname}" added`);
+  const phone = cleanPhone(f.phone.value), role=f.role.value, name=f.name.value.trim();
+  if(!validPhone(phone)){ toast("Enter a valid 10-digit number"); return; }
+  if(!can.managesRole(me.role,role)){ toast("You can't assign that role"); return; }
+  const ex = findUser(phone);
+  if(ex){ ex.role=role; ex.status="active"; if(name) ex.name=name; toast("Updated — now "+ROLE_LABEL[role]); }
+  else { users.push({ phone, role, status:"active", name }); toast(`${ROLE_LABEL[role]} added (${phone})`); }
+  saveUsers(); f.reset(); renderUsers();
 };
+
+/* approve / reject pending staff requests (admin & super admin) */
+function renderPending(){
+  const box=$("#pendingBox"); if(!box) return;
+  const pend = users.filter(u=>u.status==="pending");
+  if(!pend.length){ box.innerHTML=""; return; }
+  box.innerHTML = `<h4 class="users-h">Pending staff approvals (${pend.length})</h4>`;
+  pend.forEach(u=>{
+    const card=document.createElement("div"); card.className="pending-card";
+    card.innerHTML=`<div class="top">
+        <div><span class="who">🧑‍🍳 ${u.phone}</span> <span class="status-pill">ON HOLD</span></div>
+        <div class="card-actions"></div></div>`;
+    const acts=card.querySelector(".card-actions");
+    const ok=document.createElement("button"); ok.className="btn primary small"; ok.textContent="✓ Accept";
+    ok.onclick=()=>{ u.status="active"; u.role="staff"; saveUsers(); renderUsers(); toast(`Approved staff ${u.phone}`); };
+    const no=document.createElement("button"); no.className="btn danger small"; no.textContent="Reject";
+    no.onclick=()=>{ users=users.filter(x=>x.phone!==u.phone); saveUsers(); renderUsers(); toast(`Rejected ${u.phone}`); };
+    acts.appendChild(ok); acts.appendChild(no);
+    box.appendChild(card);
+  });
+}
+
 function renderUsers(){
+  renderPending();
   const wrap=$("#userList"); if(!wrap) return; wrap.innerHTML="";
-  users.forEach(u=>{
+  users.filter(u=>u.status==="active").forEach(u=>{
+    const isMe = me && u.phone===me.phone;
     const row=document.createElement("div"); row.className="menu-edit-row";
     row.innerHTML=`
       <span style="font-size:20px">${ROLE_EMOJI[u.role]}</span>
-      <span class="n">${u.user}${me&&u.user===me.user?'  <span class="c">(you)</span>':''}</span>
+      <span class="n">${u.name?u.name+' · ':''}${u.phone}${isMe?'  <span class="c">(you)</span>':''}</span>
       <span class="user-role-pill role-tag ${u.role}">${ROLE_LABEL[u.role]}</span>`;
-    if(me && u.user!==me.user && can.managesRole(me.role,u.role)){
+    if(me && !isMe && can.managesRole(me.role,u.role)){
       const del=document.createElement("button"); del.className="btn danger small"; del.textContent="Remove";
-      del.onclick=()=>{ users=users.filter(x=>x.user!==u.user); store.set("sg_users",users); renderUsers(); toast(`Removed ${u.user}`); };
+      del.onclick=()=>{ users=users.filter(x=>x.phone!==u.phone); saveUsers(); renderUsers(); toast(`Removed ${u.phone}`); };
       row.appendChild(del);
     }
     wrap.appendChild(row);
@@ -1184,4 +1327,11 @@ updateStickyCart();
 attachVoice();
 startEtaTicker();
 updateOnline();
-maybeShowWelcome();
+
+/* auth gate: resume an existing session, or ask the user to log in */
+applySession();
+if(!session){
+  openGate();
+} else if(session.role === "customer"){
+  maybeShowWelcome();
+}

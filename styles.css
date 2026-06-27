@@ -230,6 +230,48 @@ body.can-revenue .perm-revenue{display:block}
 
 .hidden{display:none}
 
+/* ---------- login gate (phone + OTP) ---------- */
+.auth-gate{
+  position:fixed;inset:0;z-index:70;display:none;align-items:center;justify-content:center;
+  background:linear-gradient(160deg,#e0632a,#b8431a);padding:20px;
+}
+.auth-gate.show{display:flex}
+.auth-card{
+  background:var(--card);color:var(--ink);border-radius:20px;padding:28px 24px;
+  width:380px;max-width:94vw;box-shadow:0 24px 70px rgba(0,0,0,.35);text-align:center;
+}
+.auth-logo{font-size:24px;font-weight:800;margin-bottom:2px}
+.auth-logo span{color:var(--brand)}
+.auth-tabs{display:flex;gap:8px;margin:18px 0}
+.auth-tab{flex:1;border:1px solid var(--line);background:var(--card);color:var(--muted);border-radius:12px;padding:11px;font-weight:700;font-size:15px}
+.auth-tab.active{border-color:var(--brand);background:#fff5ef;color:var(--brand)}
+body.dark .auth-tab.active{background:#3a2a1f}
+.auth-step{text-align:left}
+.auth-label{display:block;font-weight:600;font-size:14px;margin-bottom:8px}
+.auth-phone{display:flex;align-items:center;border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:14px;background:var(--card)}
+.auth-phone .cc{padding:12px 12px;background:var(--bg);font-weight:700;border-right:1px solid var(--line)}
+.auth-phone input{flex:1;border:none;padding:12px;font-size:16px;background:transparent;color:var(--ink);outline:none}
+.otp-input{width:100%;border:1px solid var(--line);border-radius:12px;padding:14px;font-size:26px;letter-spacing:10px;text-align:center;margin-bottom:12px;background:var(--card);color:var(--ink)}
+.demo-otp{background:#fff7ee;border:1px dashed var(--brand);color:var(--brand);border-radius:10px;padding:10px;font-size:14px;text-align:center;margin-bottom:14px;display:none}
+.demo-otp.show{display:block}
+body.dark .demo-otp{background:#2c2117}
+.auth-msg{font-size:13px;font-weight:600;margin:10px 0 0;min-height:16px}
+.auth-msg.bad{color:#ffe0d6}
+.auth-card .auth-msg{color:var(--muted)} .auth-card .auth-msg.bad{color:#c0392b} .auth-card .auth-msg.good{color:var(--green)}
+
+/* team-only nav (hidden for customers) */
+.team-only{display:none !important}
+body.is-team .nav-btn.team-only{display:inline-block !important}
+@media(max-width:640px){ body.is-team .bn-btn.team-only{display:flex !important} }
+
+/* pending approvals + users */
+.users-h{margin:18px 0 8px}
+.pending-card{background:#fff7ee;border:1px solid #f3c89f;border-radius:12px;padding:14px 16px;margin-bottom:10px}
+body.dark .pending-card{background:#2c2117;border-color:#5a4126}
+.pending-card .top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.pending-card .who{font-weight:700}
+.status-pill{font-size:11px;font-weight:700;padding:2px 9px;border-radius:999px;background:#fff0e8;color:var(--brand)}
+
 /* ---------- accessibility: visible focus ---------- */
 :focus-visible{outline:3px solid var(--brand);outline-offset:2px;border-radius:8px}
 .icon-btn{min-width:40px;min-height:40px}
