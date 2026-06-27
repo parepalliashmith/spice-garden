@@ -44,6 +44,7 @@ let activeCat    = "All";
 let searchTerm   = "";
 let tip          = 0;
 let promo        = null;                               // {code, ...PROMOS[code]}
+let profile      = store.get("sg_profile", {});        // remembered name/phone/address
 
 const $  = (s, el=document) => el.querySelector(s);
 const $$ = (s, el=document) => [...el.querySelectorAll(s)];
@@ -129,13 +130,14 @@ function suggestDish(q){
    NAVIGATION / THEME
    ============================================================ */
 function showView(name){
-  $$(".nav-btn").forEach(b=>b.classList.toggle("active", b.dataset.view===name));
+  $$("[data-view]").forEach(b=>b.classList.toggle("active", b.dataset.view===name));
   $$(".view").forEach(v=>v.classList.remove("active"));
   $("#view-"+name).classList.add("active");
+  window.scrollTo(0,0);
   if(name==="orders") renderMyOrders();
   updateStickyCart();
 }
-$$(".nav-btn").forEach(btn=> btn.onclick = ()=> showView(btn.dataset.view));
+$$("[data-view]").forEach(btn=> btn.onclick = ()=> showView(btn.dataset.view));
 
 function applyTheme(){
   const dark = store.get("sg_theme","light")==="dark";
@@ -404,6 +406,9 @@ $("#orderForm").onsubmit = e=>{
 function saveOrder(order, msg){
   orders.unshift(order); store.set("sg_orders", orders);
   myOrderIds.unshift(order.id); store.set("sg_myorders", myOrderIds);
+  // remember the customer so they don't retype next time
+  profile = { name:order.name, phone:order.phone, address:order.address||profile.address||"" };
+  store.set("sg_profile", profile);
   cart = []; saveCart();
   tip = 0; promo = null;
   $$("#tipBtns button").forEach((x,i)=>x.classList.toggle("active", i===0));
@@ -411,8 +416,19 @@ function saveOrder(order, msg){
   renderCart(); renderMenu();
   $("#orderForm").reset();
   $("#addressBlock").classList.add("hidden");
+  fillProfile();
   openCart(false); refreshAdminCounts();
   toast(msg); showConfirmation(order);
+}
+
+/* pre-fill known customer details into both forms */
+function fillProfile(){
+  const set = (sel, val)=>{ const el=$(sel); if(el && val && !el.value) el.value = val; };
+  set("#orderForm [name=name]",  profile.name);
+  set("#orderForm [name=phone]", profile.phone);
+  set("#orderForm [name=address]", profile.address);
+  set("#reserveForm [name=name]",  profile.name);
+  set("#reserveForm [name=phone]", profile.phone);
 }
 
 /* ============================================================
@@ -433,32 +449,84 @@ function showConfirmation(order){
 $("#confirmClose").onclick = ()=> $("#confirmOverlay").classList.remove("show");
 $("#confirmTrack").onclick = ()=>{ $("#confirmOverlay").classList.remove("show"); showView("orders"); };
 
+const ETA_MINUTES = 20;
+function orderEta(o){ return o.id + ETA_MINUTES*60*1000; }
+
 function renderMyOrders(){
   const wrap = $("#myOrdersList");
   const mine = myOrderIds.map(id=>orders.find(o=>o.id===id)).filter(Boolean);
   if(!mine.length){ wrap.innerHTML = `<p class="empty">You haven't placed any orders yet.</p>`; return; }
   wrap.innerHTML="";
   mine.forEach(o=>{
+    const cancelled = o.status==="cancelled";
     const si = stageIndex(o);
-    const steps = STAGES.map((st,i)=>
-      `<div class="ts-step ${i<=si?'on':''}"><span class="ts-dot"></span><span class="ts-lbl">${STAGE_LABEL[st]}</span></div>`
-    ).join('<span class="ts-bar"></span>');
-    const row = document.createElement("div"); row.className="track-row";
-    row.innerHTML = `
-      <div class="top">
-        <div><strong>#${String(o.id).slice(-4)}</strong> · ${o.type}
-          <div class="meta">${o.items.reduce((s,i)=>s+i.qty,0)} items · ${rupee(o.total)} · ${o.paid?"Paid":(o.payMethod==="online"?"Unpaid":"Cash")}</div>
+    const row = document.createElement("div"); row.className="track-row" + (cancelled?" cancelled":"");
+
+    if(cancelled){
+      row.innerHTML = `
+        <div class="top">
+          <div><strong>#${String(o.id).slice(-4)}</strong> · ${o.type}
+            <div class="meta">${o.items.reduce((s,i)=>s+i.qty,0)} items · ${rupee(o.total)}</div>
+          </div>
+          <span class="track-status cancelled">Cancelled</span>
         </div>
-        <span class="track-status ${si>=2?'ready':'preparing'}">${STAGE_LABEL[STAGES[si]]}</span>
-      </div>
-      <div class="track-steps">${steps}</div>
-      <div class="card-actions"></div>`;
+        <div class="card-actions"></div>`;
+    } else {
+      const steps = STAGES.map((st,i)=>
+        `<div class="ts-step ${i<=si?'on':''}"><span class="ts-dot"></span><span class="ts-lbl">${STAGE_LABEL[st]}</span></div>`
+      ).join('<span class="ts-bar"></span>');
+      const ready = si>=2;
+      const eta = ready ? "" : `<span class="eta-pill" data-eta="${orderEta(o)}">⏱️ …</span>`;
+      row.innerHTML = `
+        <div class="top">
+          <div><strong>#${String(o.id).slice(-4)}</strong> · ${o.type}
+            <div class="meta">${o.items.reduce((s,i)=>s+i.qty,0)} items · ${rupee(o.total)} · ${o.paid?"Paid":(o.payMethod==="online"?"Unpaid":"Cash")}</div>
+          </div>
+          <span class="track-status ${ready?'ready':'preparing'}">${STAGE_LABEL[STAGES[si]]}</span>
+        </div>
+        <div class="track-steps">${steps}</div>
+        <div class="eta-line">${eta}</div>
+        <div class="card-actions"></div>`;
+    }
+
+    const actions = row.querySelector(".card-actions");
     const again = document.createElement("button");
     again.className="btn ghost small"; again.textContent="🔁 Order again";
     again.onclick = ()=> reorder(o);
-    row.querySelector(".card-actions").appendChild(again);
+    actions.appendChild(again);
+    // can cancel only while still "Placed" (not yet being prepared)
+    if(!cancelled && si===0){
+      const cancel = document.createElement("button");
+      cancel.className="btn danger small"; cancel.textContent="Cancel order";
+      cancel.onclick = ()=> cancelMyOrder(o);
+      actions.appendChild(cancel);
+    }
     wrap.appendChild(row);
   });
+  updateEtas();
+}
+
+function cancelMyOrder(o){
+  if(stageIndex(o)!==0){ toast("Too late to cancel — it's already being prepared"); return; }
+  if(!confirm(`Cancel order #${String(o.id).slice(-4)}?`)) return;
+  o.status = "cancelled";
+  store.set("sg_orders", orders);
+  renderMyOrders(); refreshAdminCounts();
+  toast("Order cancelled");
+}
+
+/* live ETA countdown — updates every second while My Orders is open */
+function updateEtas(){
+  $$(".eta-pill").forEach(el=>{
+    const target = Number(el.dataset.eta);
+    const ms = target - Date.now();
+    if(ms <= 0){ el.textContent = "⏱️ Any moment now…"; return; }
+    const m = Math.floor(ms/60000), s = Math.floor(ms%60000/1000);
+    el.textContent = `⏱️ Ready in ${m}:${String(s).padStart(2,"0")}`;
+  });
+}
+function startEtaTicker(){
+  setInterval(()=>{ if($("#view-orders").classList.contains("active")) updateEtas(); }, 1000);
 }
 
 function reorder(o){
@@ -510,7 +578,9 @@ $("#reserveForm").onsubmit = e=>{
   reservations.unshift({ id:Date.now(), name:f.name.value, phone:f.phone.value, date:f.date.value,
     time:f.time.value, guests:f.guests.value, notes:f.notes.value, status:"new", made:new Date().toLocaleString() });
   store.set("sg_res", reservations);
-  f.reset(); initReserveDefaults(); refreshAdminCounts();
+  profile = { ...profile, name:f.name.value, phone:f.phone.value };
+  store.set("sg_profile", profile);
+  f.reset(); initReserveDefaults(); fillProfile(); refreshAdminCounts();
   toast("✅ Table reserved! See you soon.");
 };
 
@@ -561,7 +631,7 @@ $$(".tab").forEach(t=> t.onclick = ()=>{
 
 function renderAdmin(){ renderOrders(); renderReservations(); renderMenuEditor(); renderUsers(); refreshAdminCounts(); }
 function refreshAdminCounts(){
-  $("#ordersBadge").textContent = orders.filter(o=> stageIndex(o)<STAGES.length-1).length;
+  $("#ordersBadge").textContent = orders.filter(o=> o.status!=="cancelled" && stageIndex(o)<STAGES.length-1).length;
   $("#resBadge").textContent    = reservations.filter(r=>r.status==="new").length;
   renderStats();
 }
@@ -579,7 +649,8 @@ function renderOrders(){
   wrap.innerHTML="";
   orders.forEach(o=>{
     const si=stageIndex(o);
-    const el=document.createElement("div"); el.className="card-row";
+    const cancelled = o.status==="cancelled";
+    const el=document.createElement("div"); el.className="card-row"+(cancelled?" cancelled":"");
     const itemLine = i =>{
       const extras=[]; if(i.size&&i.size!=="Regular")extras.push(i.size);
       if(i.spice&&i.spice!=="Medium")extras.push(i.spice);
@@ -595,7 +666,7 @@ function renderOrders(){
           ${o.address?`<div class="meta">📍 ${o.address}${o.landmark?` (${o.landmark})`:""}</div>`:""}
           <div class="meta">${o.paid?'<span class="pay-paid">PAID ONLINE</span>':'<span class="pay-unpaid">'+(o.payMethod==="online"?"UNPAID":"CASH")+'</span>'}${o.promo?` <span class="tag-chip">${o.promo}</span>`:""}</div>
         </div>
-        <span class="status ${si>=STAGES.length-1?'done':'new'}">${STAGE_LABEL[STAGES[si]].toUpperCase()}</span>
+        <span class="status ${cancelled?'cancelled':si>=STAGES.length-1?'done':'new'}">${cancelled?'CANCELLED':STAGE_LABEL[STAGES[si]].toUpperCase()}</span>
       </div>
       <ul class="order-items">
         ${o.items.map(itemLine).join("")}
@@ -603,7 +674,7 @@ function renderOrders(){
       </ul>
       <div class="card-actions"></div>`;
     const actions=el.querySelector(".card-actions");
-    if(si<STAGES.length-1){
+    if(!cancelled && si<STAGES.length-1){
       const next=document.createElement("button");
       next.className="btn primary small";
       next.textContent="Advance → "+STAGE_LABEL[STAGES[si+1]];
@@ -862,6 +933,8 @@ renderCategories();
 renderMenu();
 renderCart();
 initReserveDefaults();
+fillProfile();
 refreshAdminCounts();
 updateStickyCart();
 attachVoice();
+startEtaTicker();

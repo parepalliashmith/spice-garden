@@ -38,7 +38,7 @@
 
     <div class="search-wrap">
       <span class="search-ico">🔍</span>
-      <input id="searchInput" type="search" data-i18n-ph="search.ph" placeholder="Search dishes — e.g. pizza, paneer…" autocomplete="off" />
+      <input id="searchInput" type="search" data-i18n-ph="search.ph" placeholder="Search dishes — e.g. pizza, paneer…" autocomplete="off" data-voice />
     </div>
     <div id="searchHint" class="search-hint"></div>
 
@@ -163,6 +163,14 @@
     </div>
   </section>
 </main>
+
+<!-- ===================== MOBILE BOTTOM NAV ===================== -->
+<nav class="bottom-nav">
+  <button class="bn-btn active" data-view="menu"><span class="bn-ico">🍽️</span><span data-i18n="nav.menu">Menu</span></button>
+  <button class="bn-btn" data-view="reserve"><span class="bn-ico">📅</span><span data-i18n="nav.reserve">Reserve</span></button>
+  <button class="bn-btn" data-view="orders"><span class="bn-ico">📦</span><span data-i18n="nav.orders">My Orders</span></button>
+  <button class="bn-btn" data-view="admin"><span class="bn-ico">🛠️</span><span data-i18n="nav.admin">Admin</span></button>
+</nav>
 
 <!-- ===================== STICKY CART BAR ===================== -->
 <button class="sticky-cart" id="stickyCart">

@@ -354,8 +354,36 @@ body.dark .login-hint code,body.dark .upi-id{background:#1d1813}
 body.dark .pay-method.active{background:#3a2a1f}
 body.dark .nav-btn.active,body.dark .cat-chip.active{color:#fff}
 
+/* ---------- live ETA + cancelled ---------- */
+.eta-line{margin-top:10px}
+.eta-pill{display:inline-block;background:#fff3e9;color:var(--brand);font-weight:700;font-size:13px;padding:4px 12px;border-radius:999px}
+body.dark .eta-pill{background:#3a2a1f}
+.track-status.cancelled{background:#fdecea;color:#c0392b}
+.status.cancelled{background:#fdecea;color:#c0392b}
+.track-row.cancelled,.card-row.cancelled{opacity:.7}
+
+/* ---------- mobile bottom nav ---------- */
+.bottom-nav{
+  display:none;position:fixed;left:0;right:0;bottom:0;z-index:38;
+  background:var(--card);border-top:1px solid var(--line);
+  padding:6px 4px env(safe-area-inset-bottom);
+}
+.bn-btn{
+  flex:1;border:none;background:none;color:var(--muted);
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  font-size:11px;font-weight:600;padding:6px 2px;
+}
+.bn-btn .bn-ico{font-size:20px;line-height:1}
+.bn-btn.active{color:var(--brand)}
+
+@media(max-width:640px){
+  .nav{display:none}                      /* top links replaced by bottom bar */
+  .bottom-nav{display:flex}
+  body{padding-bottom:64px}               /* room for the bottom bar */
+  .sticky-cart{bottom:72px}               /* sit above the bottom bar */
+  .drawer{width:100%}
+}
 @media(max-width:560px){
-  .nav-btn{padding:8px 10px;font-size:13px}
   .brand-name{display:none}
   .hero h1{font-size:27px}
   .menu-grid{grid-template-columns:1fr 1fr;gap:12px}
