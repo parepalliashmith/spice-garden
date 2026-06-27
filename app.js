@@ -10,43 +10,145 @@ const store = {
 
 /* ---------- seed menu ---------- */
 const DEFAULT_MENU = [
-  { id:1, name:"Margherita Pizza", price:299, category:"Pizza",    emoji:"🍕", desc:"Classic tomato, mozzarella & basil.", veg:"veg",    tag:"Bestseller" },
-  { id:2, name:"Paneer Tikka",     price:249, category:"Starters", emoji:"🧆", desc:"Spiced grilled cottage cheese.",     veg:"veg",    tag:"Chef's Special" },
-  { id:3, name:"Veg Burger",       price:149, category:"Burgers",  emoji:"🍔", desc:"Crispy patty, lettuce & sauce.",     veg:"veg",    tag:"" },
-  { id:4, name:"Butter Chicken",   price:380, category:"Mains",    emoji:"🍛", desc:"Creamy tomato chicken curry.",       veg:"nonveg", tag:"Bestseller" },
-  { id:5, name:"Masala Dosa",      price:129, category:"Mains",    emoji:"🥞", desc:"Crispy dosa with potato filling.",   veg:"veg",    tag:"" },
-  { id:6, name:"French Fries",     price:99,  category:"Starters", emoji:"🍟", desc:"Golden, salted & crispy.",           veg:"veg",    tag:"" },
-  { id:7, name:"Chocolate Cake",   price:159, category:"Desserts", emoji:"🍰", desc:"Rich molten chocolate slice.",       veg:"veg",    tag:"" },
-  { id:8, name:"Cold Coffee",      price:119, category:"Drinks",   emoji:"🥤", desc:"Chilled blended coffee.",            veg:"veg",    tag:"" },
+  /* ---- Veg Starters ---- */
+  { id:1,  name:"Paneer 65",          price:220, category:"Veg Starters", veg:"veg", tag:"Bestseller" },
+  { id:2,  name:"Mushroom Chilli",    price:220, category:"Veg Starters", veg:"veg", tag:"" },
+  { id:3,  name:"Mushroom Manchuria", price:220, category:"Veg Starters", veg:"veg", tag:"" },
+  { id:4,  name:"Mushroom 65",        price:230, category:"Veg Starters", veg:"veg", tag:"" },
+  { id:5,  name:"Veg Manchuria",      price:230, category:"Veg Starters", veg:"veg", tag:"" },
+  { id:6,  name:"Chilli Paneer",      price:240, category:"Veg Starters", veg:"veg", tag:"Spicy" },
+  { id:7,  name:"Paneer Majestic",    price:260, category:"Veg Starters", veg:"veg", tag:"" },
+  { id:8,  name:"Paneer Hong Kong",   price:260, category:"Veg Starters", veg:"veg", tag:"" },
+  { id:9,  name:"Kaju Fry",           price:280, category:"Veg Starters", veg:"veg", tag:"" },
 
-  /* Rice & Noodles */
-  { id:101, name:"Veg Fried Rice",      price:200, category:"Rice & Noodles", emoji:"🍚", desc:"Wok-tossed rice with veggies.",          veg:"veg",    tag:"" },
-  { id:102, name:"Chicken Fried Rice",  price:250, category:"Rice & Noodles", emoji:"🍚", desc:"Rice tossed with chicken & spices.",     veg:"nonveg", tag:"" },
-  { id:103, name:"Veg Noodles",         price:200, category:"Rice & Noodles", emoji:"🍜", desc:"Hakka noodles with crunchy veggies.",    veg:"veg",    tag:"" },
-  { id:104, name:"Chicken Noodles",     price:250, category:"Rice & Noodles", emoji:"🍜", desc:"Noodles tossed with chicken.",           veg:"nonveg", tag:"" },
+  /* ---- Egg ---- */
+  { id:10, name:"Boiled Eggs (2 Pcs)",price:30,  category:"Egg", veg:"nonveg", tag:"" },
+  { id:11, name:"Egg Curry",          price:160, category:"Egg", veg:"nonveg", tag:"" },
+  { id:12, name:"Egg Burji",          price:160, category:"Egg", veg:"nonveg", tag:"" },
+  { id:13, name:"Egg Masala",         price:160, category:"Egg", veg:"nonveg", tag:"" },
+  { id:14, name:"Egg Tomato Curry",   price:180, category:"Egg", veg:"nonveg", tag:"" },
+  { id:15, name:"Egg Butter Masala",  price:190, category:"Egg", veg:"nonveg", tag:"" },
+  { id:16, name:"Egg 65",             price:190, category:"Egg", veg:"nonveg", tag:"" },
+  { id:17, name:"Egg Fry",            price:190, category:"Egg", veg:"nonveg", tag:"" },
+  { id:18, name:"Egg Chilli",         price:190, category:"Egg", veg:"nonveg", tag:"" },
+  { id:19, name:"Egg Manchuria",      price:190, category:"Egg", veg:"nonveg", tag:"" },
 
-  /* Non-veg starters */
-  { id:105, name:"Chicken 65",          price:280, category:"Starters", emoji:"🍗", desc:"Crispy, spicy deep-fried chicken.",  veg:"nonveg", tag:"Spicy" },
-  { id:106, name:"Chilli Chicken",      price:300, category:"Starters", emoji:"🌶️", desc:"Indo-Chinese chilli chicken.",      veg:"nonveg", tag:"Spicy" },
+  /* ---- Chicken Starters ---- */
+  { id:20, name:"Chicken Strips",        price:180, category:"Chicken Starters", veg:"nonveg", tag:"" },
+  { id:21, name:"Lolly Pop Half Plate (3 Pcs)", price:180, category:"Chicken Starters", veg:"nonveg", tag:"" },
+  { id:22, name:"Chicken Spring Roll",   price:190, category:"Chicken Starters", veg:"nonveg", tag:"" },
+  { id:23, name:"Chicken 65",            price:240, category:"Chicken Starters", veg:"nonveg", tag:"Bestseller" },
+  { id:24, name:"Chicken Manchuria",     price:250, category:"Chicken Starters", veg:"nonveg", tag:"" },
+  { id:25, name:"Chicken Chilli",        price:250, category:"Chicken Starters", veg:"nonveg", tag:"Spicy" },
+  { id:26, name:"Ginger Chicken (Dry)",  price:250, category:"Chicken Starters", veg:"nonveg", tag:"" },
+  { id:27, name:"Chicken Fry (Bone)",    price:250, category:"Chicken Starters", veg:"nonveg", tag:"" },
+  { id:28, name:"Schezwan Chicken",      price:250, category:"Chicken Starters", veg:"nonveg", tag:"Spicy" },
+  { id:29, name:"Chicken Drum Sticks",   price:260, category:"Chicken Starters", veg:"nonveg", tag:"" },
+  { id:30, name:"Chicken Lollypop",      price:260, category:"Chicken Starters", veg:"nonveg", tag:"" },
+  { id:31, name:"Lemon Chicken",         price:270, category:"Chicken Starters", veg:"nonveg", tag:"" },
+  { id:32, name:"Pepper Chicken",        price:270, category:"Chicken Starters", veg:"nonveg", tag:"" },
+  { id:33, name:"Chicken Wings",         price:270, category:"Chicken Starters", veg:"nonveg", tag:"" },
+  { id:34, name:"Lovely Chicken",        price:270, category:"Chicken Starters", veg:"nonveg", tag:"" },
+  { id:35, name:"Chicken Roast (Bone)",  price:280, category:"Chicken Starters", veg:"nonveg", tag:"" },
+  { id:36, name:"Chicken Majestic",      price:280, category:"Chicken Starters", veg:"nonveg", tag:"" },
+  { id:37, name:"Chicken Fry (Boneless)",price:280, category:"Chicken Starters", veg:"nonveg", tag:"" },
+  { id:38, name:"Chicken 555",           price:280, category:"Chicken Starters", veg:"nonveg", tag:"" },
+  { id:39, name:"Punjabi Chicken",       price:280, category:"Chicken Starters", veg:"nonveg", tag:"" },
+  { id:40, name:"Chicken Roast (Boneless)", price:290, category:"Chicken Starters", veg:"nonveg", tag:"" },
+  { id:41, name:"Chicken Chettinadu",    price:290, category:"Chicken Starters", veg:"nonveg", tag:"" },
+  { id:42, name:"Burhani Chicken",       price:300, category:"Chicken Starters", veg:"nonveg", tag:"" },
 
-  /* Curries / Mains */
-  { id:107, name:"Kadai Chicken",       price:370, category:"Mains", emoji:"🍛", desc:"Chicken in spicy kadai gravy.",        veg:"nonveg", tag:"" },
-  { id:108, name:"Paneer Butter Masala",price:300, category:"Mains", emoji:"🧈", desc:"Paneer in rich, buttery tomato gravy.", veg:"veg",  tag:"Bestseller" },
+  /* ---- Fish ---- */
+  { id:43, name:"Fish 65",        price:270, category:"Fish", veg:"nonveg", tag:"" },
+  { id:44, name:"Fish Fry",       price:270, category:"Fish", veg:"nonveg", tag:"" },
+  { id:45, name:"Fish Manchuria", price:270, category:"Fish", veg:"nonveg", tag:"" },
+  { id:46, name:"Chilli Fish",    price:270, category:"Fish", veg:"nonveg", tag:"Spicy" },
+  { id:47, name:"Ginger Fish",    price:290, category:"Fish", veg:"nonveg", tag:"" },
+  { id:48, name:"Fish Roast",     price:290, category:"Fish", veg:"nonveg", tag:"" },
+  { id:49, name:"Apollo Fish",    price:290, category:"Fish", veg:"nonveg", tag:"Bestseller" },
 
-  /* Biryani */
-  { id:109, name:"Chicken Dum Biryani", price:300, category:"Biryani", emoji:"🍛", desc:"Fragrant dum-cooked chicken biryani.", veg:"nonveg", tag:"Bestseller" },
-  { id:110, name:"Mutton Biryani",      price:400, category:"Biryani", emoji:"🍛", desc:"Slow-cooked spicy mutton biryani.",     veg:"nonveg", tag:"Chef's Special" },
+  /* ---- Prawns ---- */
+  { id:50, name:"Prawns 65",     price:280, category:"Prawns", veg:"nonveg", tag:"" },
+  { id:51, name:"Chilli Prawns", price:280, category:"Prawns", veg:"nonveg", tag:"Spicy" },
+  { id:52, name:"Pepper Prawns", price:290, category:"Prawns", veg:"nonveg", tag:"" },
+  { id:53, name:"Loose Prawns",  price:300, category:"Prawns", veg:"nonveg", tag:"" },
+  { id:54, name:"Prawns Fry",    price:330, category:"Prawns", veg:"nonveg", tag:"" },
 
-  /* Breads */
-  { id:111, name:"Butter Naan",         price:45, category:"Breads", emoji:"🫓", desc:"Soft tandoor naan with butter.", veg:"veg", tag:"" },
-  { id:112, name:"Garlic Naan",         price:55, category:"Breads", emoji:"🫓", desc:"Naan topped with garlic & herbs.", veg:"veg", tag:"" },
-  { id:113, name:"Tandoori Roti",       price:25, category:"Breads", emoji:"🫓", desc:"Whole-wheat tandoor roti.", veg:"veg", tag:"" },
+  /* ---- Tandoori Kababs ---- */
+  { id:55, name:"Tangdi Kabab (1 Piece)",   price:120, category:"Tandoori", veg:"nonveg", tag:"" },
+  { id:56, name:"Paneer Tikka",             price:250, category:"Tandoori", veg:"veg",    tag:"" },
+  { id:57, name:"Chicken Tikka",            price:260, category:"Tandoori", veg:"nonveg", tag:"" },
+  { id:58, name:"Tandoori Chicken (Half)",  price:300, category:"Tandoori", veg:"nonveg", tag:"" },
+  { id:59, name:"Tandoori Chicken (Full)",  price:550, category:"Tandoori", veg:"nonveg", tag:"Chef's Special" },
 
-  /* Drinks */
-  { id:114, name:"Soft Drinks",         price:40, category:"Drinks", emoji:"🥤", desc:"Chilled soft drink (300ml).", veg:"veg", tag:"" },
-  { id:115, name:"Mineral Water",       price:30, category:"Drinks", emoji:"💧", desc:"Packaged drinking water (1L).", veg:"veg", tag:"" },
+  /* ---- Rotis & Breads ---- */
+  { id:60, name:"Roti",          price:30, category:"Breads", veg:"veg", tag:"" },
+  { id:61, name:"Butter Roti",   price:35, category:"Breads", veg:"veg", tag:"" },
+  { id:62, name:"Plain Naan",    price:35, category:"Breads", veg:"veg", tag:"" },
+  { id:63, name:"Plain Parotha", price:35, category:"Breads", veg:"veg", tag:"" },
+  { id:64, name:"Butter Naan",   price:40, category:"Breads", veg:"veg", tag:"" },
+  { id:65, name:"Kulcha",        price:45, category:"Breads", veg:"veg", tag:"" },
+  { id:66, name:"Butter Paratha",price:45, category:"Breads", veg:"veg", tag:"" },
+  { id:67, name:"Pudina Paratha",price:45, category:"Breads", veg:"veg", tag:"" },
+  { id:68, name:"Lacha Paratha", price:45, category:"Breads", veg:"veg", tag:"" },
+  { id:69, name:"Methi Paratha", price:50, category:"Breads", veg:"veg", tag:"" },
+  { id:70, name:"Butter Kulcha", price:50, category:"Breads", veg:"veg", tag:"" },
+  { id:71, name:"Aaloo Paratha", price:50, category:"Breads", veg:"veg", tag:"" },
+  { id:72, name:"Masala Kulcha", price:50, category:"Breads", veg:"veg", tag:"" },
+  { id:73, name:"Garlic Naan",   price:55, category:"Breads", veg:"veg", tag:"" },
+  { id:74, name:"Paneer Paratha",price:60, category:"Breads", veg:"veg", tag:"" },
+
+  /* ---- Veg Curries (Main Course) ---- */
+  { id:75, name:"Tomato Curry",        price:140, category:"Veg Curries", veg:"veg", tag:"" },
+  { id:76, name:"Plain Palak",         price:160, category:"Veg Curries", veg:"veg", tag:"" },
+  { id:77, name:"Kadai Veg",           price:200, category:"Veg Curries", veg:"veg", tag:"" },
+  { id:78, name:"Mix Veg Curry",       price:200, category:"Veg Curries", veg:"veg", tag:"" },
+  { id:79, name:"Palak Paneer",        price:220, category:"Veg Curries", veg:"veg", tag:"" },
+  { id:80, name:"Vegetable Maharani",  price:220, category:"Veg Curries", veg:"veg", tag:"" },
+  { id:81, name:"Veg Kolhapuri",       price:220, category:"Veg Curries", veg:"veg", tag:"" },
+  { id:82, name:"Veg Chatpat",         price:230, category:"Veg Curries", veg:"veg", tag:"" },
+  { id:83, name:"Veg Jaipuri",         price:230, category:"Veg Curries", veg:"veg", tag:"" },
+  { id:84, name:"Baby Corn Masala",    price:230, category:"Veg Curries", veg:"veg", tag:"" },
+  { id:85, name:"Paneer Butter Masala",price:230, category:"Veg Curries", veg:"veg", tag:"Bestseller" },
+  { id:86, name:"Kadai Paneer",        price:230, category:"Veg Curries", veg:"veg", tag:"" },
+  { id:87, name:"Veg Shahi Kurma",     price:230, category:"Veg Curries", veg:"veg", tag:"" },
+  { id:88, name:"Methi Chaman",        price:240, category:"Veg Curries", veg:"veg", tag:"" },
+  { id:89, name:"Mushroom Curry",      price:240, category:"Veg Curries", veg:"veg", tag:"" },
+  { id:90, name:"Paneer Chatpat",      price:250, category:"Veg Curries", veg:"veg", tag:"" },
+  { id:91, name:"Paneer Kurma",        price:250, category:"Veg Curries", veg:"veg", tag:"" },
+  { id:92, name:"Paneer Shahi Kurma",  price:250, category:"Veg Curries", veg:"veg", tag:"" },
+  { id:93, name:"Malai Kofta",         price:260, category:"Veg Curries", veg:"veg", tag:"" },
+  { id:94, name:"Tomato Kaju Curry",   price:260, category:"Veg Curries", veg:"veg", tag:"" },
+  { id:95, name:"Kaju Paneer",         price:270, category:"Veg Curries", veg:"veg", tag:"" },
+  { id:96, name:"Kaju Capsicum",       price:270, category:"Veg Curries", veg:"veg", tag:"" },
+  { id:97, name:"Kaju Curry",          price:290, category:"Veg Curries", veg:"veg", tag:"" },
+
+  /* ---- Chicken Curries (Main Course) ---- */
+  { id:98,  name:"Chicken Curry (Bone)",        price:250, category:"Chicken Curries", veg:"nonveg", tag:"Bestseller" },
+  { id:99,  name:"Butter Chicken",              price:270, category:"Chicken Curries", veg:"nonveg", tag:"Bestseller" },
+  { id:100, name:"Chicken Chettinad (Bone)",    price:270, category:"Chicken Curries", veg:"nonveg", tag:"" },
+  { id:101, name:"Dumka Chicken",               price:280, category:"Chicken Curries", veg:"nonveg", tag:"" },
+  { id:102, name:"Methi Chicken",               price:280, category:"Chicken Curries", veg:"nonveg", tag:"" },
+  { id:103, name:"Chicken Afghani",             price:300, category:"Chicken Curries", veg:"nonveg", tag:"" },
+  { id:104, name:"Kaju Chicken",                price:320, category:"Chicken Curries", veg:"nonveg", tag:"" },
+  { id:105, name:"Ginger Chicken Curry",        price:260, category:"Chicken Curries", veg:"nonveg", tag:"" },
+  { id:106, name:"Chicken Curry (Boneless)",    price:270, category:"Chicken Curries", veg:"nonveg", tag:"" },
+  { id:107, name:"Kadai Chicken",               price:280, category:"Chicken Curries", veg:"nonveg", tag:"" },
+  { id:108, name:"Chicken Kolhapuri",           price:280, category:"Chicken Curries", veg:"nonveg", tag:"" },
+  { id:109, name:"Mughlai Chicken",             price:290, category:"Chicken Curries", veg:"nonveg", tag:"" },
+  { id:110, name:"Chicken Chettinad (Boneless)",price:290, category:"Chicken Curries", veg:"nonveg", tag:"" },
+  { id:111, name:"Chicken Maharani",            price:300, category:"Chicken Curries", veg:"nonveg", tag:"" },
+
+  /* ---- Mutton ---- */
+  { id:112, name:"Andhra Mutton", price:300, category:"Mutton", veg:"nonveg", tag:"Spicy" },
+  { id:113, name:"Mutton Curry",  price:300, category:"Mutton", veg:"nonveg", tag:"" },
+  { id:114, name:"Mutton Fry",    price:320, category:"Mutton", veg:"nonveg", tag:"" },
+
+  /* ---- Fish & Prawns (Main Course) ---- */
+  { id:115, name:"Fish Curry",   price:290, category:"Seafood", veg:"nonveg", tag:"" },
+  { id:116, name:"Prawns Curry", price:300, category:"Seafood", veg:"nonveg", tag:"" },
 ];
-const MENU_VERSION = 2;   // bump when DEFAULT_MENU changes, to push new items to existing users
+const MENU_VERSION = 3;   // bump when DEFAULT_MENU changes
 
 /* customization options (shared by all dishes) */
 const SIZES   = [ {name:"Regular", price:0}, {name:"Large", price:60} ];
@@ -63,11 +165,9 @@ const PROMOS = {
 };
 
 let menu = store.get("sg_menu", null);
-if(!menu){ menu = DEFAULT_MENU.map(d=>({...d})); store.set("sg_menu", menu); }
-/* migrate: add any new default dishes the user doesn't have yet (keeps their edits/additions) */
-if(store.get("sg_menu_v", 1) < MENU_VERSION){
-  const have = new Set(menu.map(m=>m.name.toLowerCase()));
-  DEFAULT_MENU.forEach(d=>{ if(!have.has(d.name.toLowerCase())) menu.push({...d}); });
+/* on a menu-version bump, load the full current menu for everyone (this release is a complete menu) */
+if(!menu || store.get("sg_menu_v", 0) < MENU_VERSION){
+  menu = DEFAULT_MENU.map(d=>({...d}));
   store.set("sg_menu", menu);
   store.set("sg_menu_v", MENU_VERSION);
 }
@@ -86,7 +186,11 @@ let profile      = store.get("sg_profile", {});        // remembered name/phone/
 const $  = (s, el=document) => el.querySelector(s);
 const $$ = (s, el=document) => [...el.querySelectorAll(s)];
 const rupee = n => "₹" + Math.round(n).toLocaleString("en-IN");
-const emojiFor = c => ({Pizza:"🍕",Starters:"🍟",Burgers:"🍔",Mains:"🍛",Desserts:"🍰",Drinks:"🥤","Rice & Noodles":"🍚",Biryani:"🍛",Breads:"🫓"}[c] || "🍴");
+const emojiFor = c => ({
+  "Veg Starters":"🥗","Egg":"🥚","Chicken Starters":"🍗","Fish":"🐟","Prawns":"🦐",
+  "Tandoori":"🍢","Breads":"🫓","Veg Curries":"🍲","Chicken Curries":"🍛","Mutton":"🍖","Seafood":"🦞",
+  Pizza:"🍕",Starters:"🍟",Burgers:"🍔",Mains:"🍛",Desserts:"🍰",Drinks:"🥤","Rice & Noodles":"🍚",Biryani:"🍛"
+}[c] || "🍴");
 const uid = () => Date.now() + "-" + Math.floor(performance.now()*1000 % 100000);
 
 /* ============================================================
