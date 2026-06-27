@@ -800,26 +800,57 @@ function attachVoice(){
     mic.onclick = ()=> listen(field, mode, mic);
   });
 }
-let activeRec = null;
+let activeRec = null, activeMic = null, voiceWatchdog = null;
+const VOICE_ERR = {
+  "not-allowed":"🎤 Microphone blocked — click the 🔒 in the address bar and allow it",
+  "service-not-allowed":"🎤 Microphone blocked by the browser/permissions",
+  "no-speech":"🎤 Didn't hear anything — tap and speak clearly",
+  "audio-capture":"🎤 No microphone found on this device",
+  "network":"🎤 Voice needs internet — check your connection",
+  "aborted":"" // user/stop initiated — no message
+};
+function stopVoice(){
+  if(voiceWatchdog){ clearTimeout(voiceWatchdog); voiceWatchdog=null; }
+  if(activeMic) activeMic.classList.remove("listening");
+  if(activeRec){ try{ activeRec.stop(); }catch(_){} }
+  activeRec=null; activeMic=null;
+}
 function listen(field, mode, mic){
-  if(activeRec){ try{ activeRec.stop(); }catch(_){} activeRec=null; return; }
-  const rec = new SpeechRec();
+  if(!SpeechRec){ toast("Voice isn't supported in this browser"); return; }
+  if(activeRec){ stopVoice(); return; }          // tapping again cancels
+
+  let rec;
+  try { rec = new SpeechRec(); } catch(_){ toast("Voice unavailable here — open in a Chrome tab"); return; }
   rec.lang = lang === "hi" ? "hi-IN" : "en-US";
   rec.interimResults = false; rec.maxAlternatives = 1;
-  activeRec = rec;
+  activeRec = rec; activeMic = mic;
   mic.classList.add("listening");
   field.focus();
+  toast(lang==="hi" ? "🎤 सुन रहे हैं… अब बोलिए" : "🎤 Listening… speak now");
+
   rec.onresult = e=>{
     let text = (e.results[0][0].transcript || "").trim();
     if(mode === "number") text = toDigits(text);
     if(field.tagName === "TEXTAREA" && field.value.trim()) field.value += " " + text;
     else field.value = text;
     field.dispatchEvent(new Event("input", { bubbles:true }));
+    toast("✅ Got it");
   };
-  const done = ()=>{ mic.classList.remove("listening"); activeRec=null; };
-  rec.onend = done;
-  rec.onerror = ev=>{ done(); if(ev.error==="not-allowed") toast("🎤 Allow microphone access to use voice"); };
-  try{ rec.start(); }catch(_){ done(); }
+  rec.onerror = ev=>{
+    const msg = VOICE_ERR[ev.error];
+    if(msg === undefined) toast("🎤 Voice error — please try again");
+    else if(msg) toast(msg);
+    stopVoice();
+  };
+  rec.onend = ()=> stopVoice();
+
+  try{
+    rec.start();
+    // safety net: if nothing happens in 9s (e.g. blocked in an iframe), reset the UI
+    voiceWatchdog = setTimeout(()=>{
+      if(activeRec===rec){ toast("🎤 No response — try opening localhost in a Chrome tab"); stopVoice(); }
+    }, 9000);
+  }catch(_){ toast("🎤 Couldn't start — open in a Chrome tab and allow the mic"); stopVoice(); }
 }
 
 /* ============================================================
