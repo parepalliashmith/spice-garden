@@ -40,6 +40,37 @@ const $$ = (s, el=document) => [...el.querySelectorAll(s)];
 const rupee = n => "₹" + n.toLocaleString("en-IN");
 const emojiFor = c => ({Pizza:"🍕",Starters:"🍟",Burgers:"🍔",Mains:"🍛",Desserts:"🍰",Drinks:"🥤"}[c] || "🍴");
 
+/* ---------- typo-tolerant search ---------- */
+/* edit distance between two words (how many single-char changes apart) */
+function levenshtein(a, b){
+  const m = a.length, n = b.length;
+  if(!m) return n; if(!n) return m;
+  const dp = Array.from({length:n+1}, (_,i)=>i);
+  for(let i=1; i<=m; i++){
+    let prev = dp[0]; dp[0] = i;
+    for(let j=1; j<=n; j++){
+      const tmp = dp[j];
+      dp[j] = Math.min(dp[j]+1, dp[j-1]+1, prev + (a[i-1]===b[j-1] ? 0 : 1));
+      prev = tmp;
+    }
+  }
+  return dp[n];
+}
+/* does a search word match a dish word, allowing small spelling mistakes? */
+function fuzzyWord(term, word){
+  if(word.includes(term) || term.includes(word)) return true;   // substring / partial
+  const tol = term.length >= 7 ? 2 : term.length >= 4 ? 1 : 0;   // longer word → forgive more typos
+  return levenshtein(term, word) <= tol;
+}
+/* match a dish against the whole query (name + description + category) */
+function searchMatches(m, query){
+  if(!query) return true;
+  const words = (m.name + " " + (m.desc||"") + " " + m.category)
+    .toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
+  return query.split(/\s+/).filter(Boolean)
+    .every(term => words.some(w => fuzzyWord(term, w)));
+}
+
 /* ============================================================
    NAVIGATION
    ============================================================ */
@@ -89,7 +120,7 @@ function renderMenu(){
   grid.innerHTML = "";
   const items = menu.filter(m=>
     (activeCat==="All" || m.category===activeCat) &&
-    (!searchTerm || (m.name+" "+(m.desc||"")).toLowerCase().includes(searchTerm))
+    searchMatches(m, searchTerm)
   );
   if(!items.length){
     grid.innerHTML = `<p class="empty">No dishes found${searchTerm?` for “${searchTerm}”`:""}.</p>`;

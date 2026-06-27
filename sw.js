@@ -1,5 +1,5 @@
 /* Spice Garden service worker — offline cache */
-const CACHE = "spice-garden-v1";
+const CACHE = "spice-garden-v2";
 const ASSETS = [
   "./",
   "./index.html",
@@ -22,14 +22,15 @@ self.addEventListener("activate", e=>{
   self.clients.claim();
 });
 
-/* cache-first, fall back to network */
+/* network-first: always try the live version, fall back to cache when offline.
+   This keeps the app fresh online while still working with no connection. */
 self.addEventListener("fetch", e=>{
   if(e.request.method !== "GET") return;
   e.respondWith(
-    caches.match(e.request).then(hit => hit || fetch(e.request).then(res=>{
+    fetch(e.request).then(res=>{
       const copy = res.clone();
       caches.open(CACHE).then(c=>c.put(e.request, copy)).catch(()=>{});
       return res;
-    }).catch(()=> caches.match("./index.html")))
+    }).catch(()=> caches.match(e.request).then(hit => hit || caches.match("./index.html")))
   );
 });
