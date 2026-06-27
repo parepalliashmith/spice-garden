@@ -230,6 +230,40 @@ body.can-revenue .perm-revenue{display:block}
 
 .hidden{display:none}
 
+/* ---------- accessibility: visible focus ---------- */
+:focus-visible{outline:3px solid var(--brand);outline-offset:2px;border-radius:8px}
+.icon-btn{min-width:40px;min-height:40px}
+
+/* ---------- offline banner ---------- */
+.offline-bar{
+  display:none;background:#3a3127;color:#fff;text-align:center;
+  padding:8px 12px;font-size:14px;font-weight:600;
+}
+.offline-bar.show{display:block}
+
+/* ---------- veg-only filter ---------- */
+.filter-row{display:flex;justify-content:center;margin-bottom:12px}
+.veg-toggle{
+  display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);
+  background:var(--card);color:var(--muted);border-radius:999px;padding:8px 16px;font-weight:600;font-size:14px;
+}
+.veg-toggle.on{border-color:var(--green);background:#e6f6ec;color:var(--green)}
+body.dark .veg-toggle.on{background:#1c2e22}
+
+/* ---------- welcome guide ---------- */
+.welcome-modal{text-align:center;max-width:400px}
+.welcome-logo{font-size:48px;line-height:1}
+.welcome-modal h3{margin:8px 0 2px;font-size:24px}
+.welcome-steps{list-style:none;padding:0;margin:18px 0;text-align:left}
+.welcome-steps li{display:flex;gap:12px;align-items:flex-start;padding:9px 0;font-size:15px}
+.welcome-steps li span:first-child{font-size:22px;line-height:1.2}
+
+/* ---------- order ratings ---------- */
+.rate-box{display:flex;align-items:center;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line);flex-wrap:wrap}
+.stars{display:inline-flex;gap:2px}
+.star{border:none;background:none;font-size:22px;line-height:1;color:#f5a623;padding:0 1px;cursor:pointer}
+.stars-static{color:#f5a623;font-size:18px;letter-spacing:1px}
+
 /* ---------- voice input ---------- */
 .voice-wrap{position:relative;display:block}
 .voice-wrap input,.voice-wrap textarea{width:100%;padding-right:44px}

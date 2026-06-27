@@ -42,6 +42,7 @@ let cart         = store.get("sg_cart", []);          // array of line items —
 let favs         = store.get("sg_favs", []);          // favourite item ids
 let activeCat    = "All";
 let searchTerm   = "";
+let vegOnly      = store.get("sg_vegonly", false);
 let tip          = 0;
 let promo        = null;                               // {code, ...PROMOS[code]}
 let profile      = store.get("sg_profile", {});        // remembered name/phone/address
@@ -67,9 +68,12 @@ const I18N = {
     "f.requests":"Special requests","f.type":"Order type","f.address":"Delivery address","f.landmark":"Landmark","f.pay":"Payment",
     "cart.title":"Your Order","cart.view":"View Cart",
     "cz.size":"Size","cz.spice":"Spice level","cz.addons":"Add-ons","cz.note":"Special instructions",
-    "promo.apply":"Apply","tip.label":"Tip the staff",
+    "promo.apply":"Apply","tip.label":"Tip the staff","filter.veg":"Veg only",
     "confirm.title":"Order Confirmed!","confirm.no":"Your order number is","confirm.eta":"Ready in about",
     "confirm.track":"Track my order","confirm.keep":"Keep browsing",
+    "welcome.title":"Welcome to Spice Garden!","welcome.sub":"Ordering is quick and easy:",
+    "welcome.s1":"Browse the menu and tap a dish to customize it.","welcome.s2":"Add to cart, then pay online or choose cash.",
+    "welcome.s3":"Track your order live in “My Orders”.","welcome.s4":"Tap the mic to fill forms by voice.","welcome.start":"Start ordering",
   },
   hi:{
     "nav.menu":"मेन्यू","nav.reserve":"बुकिंग","nav.orders":"मेरे ऑर्डर","nav.admin":"एडमिन",
@@ -82,20 +86,47 @@ const I18N = {
     "f.requests":"विशेष अनुरोध","f.type":"ऑर्डर प्रकार","f.address":"डिलीवरी पता","f.landmark":"लैंडमार्क","f.pay":"भुगतान",
     "cart.title":"आपका ऑर्डर","cart.view":"कार्ट देखें",
     "cz.size":"साइज़","cz.spice":"तीखापन","cz.addons":"एड-ऑन","cz.note":"विशेष निर्देश",
-    "promo.apply":"लागू करें","tip.label":"स्टाफ़ को टिप दें",
+    "promo.apply":"लागू करें","tip.label":"स्टाफ़ को टिप दें","filter.veg":"शाकाहारी",
     "confirm.title":"ऑर्डर कन्फर्म!","confirm.no":"आपका ऑर्डर नंबर है","confirm.eta":"लगभग तैयार",
     "confirm.track":"ऑर्डर ट्रैक करें","confirm.keep":"और देखें",
+    "welcome.title":"स्पाइस गार्डन में स्वागत है!","welcome.sub":"ऑर्डर करना आसान है:",
+    "welcome.s1":"मेन्यू देखें और कस्टमाइज़ करने के लिए डिश पर टैप करें।","welcome.s2":"कार्ट में जोड़ें, फिर ऑनलाइन या कैश से भुगतान करें।",
+    "welcome.s3":"“मेरे ऑर्डर” में अपना ऑर्डर लाइव ट्रैक करें।","welcome.s4":"फ़ॉर्म आवाज़ से भरने के लिए माइक दबाएँ।","welcome.start":"ऑर्डर शुरू करें",
+  },
+  te:{
+    "nav.menu":"మెను","nav.reserve":"బుకింగ్","nav.orders":"నా ఆర్డర్లు","nav.admin":"అడ్మిన్",
+    "hero.title":"స్పైస్ గార్డెన్‌కు స్వాగతం","hero.sub":"తాజా, రుచికరమైన ఆహారం — టేక్‌అవే లేదా డైన్-ఇన్ ఆర్డర్ చేయండి.",
+    "search.ph":"వంటకాలను వెతకండి — ఉదా. పిజ్జా, పనీర్…",
+    "orders.title":"నా ఆర్డర్లు","orders.sub":"ఈ పరికరం నుండి చేసిన ఆర్డర్లను ట్రాక్ చేయండి.",
+    "reserve.title":"టేబుల్ బుక్ చేయండి","reserve.sub":"మీ స్థలాన్ని రిజర్వ్ చేయండి, మేము సిద్ధంగా ఉంచుతాం.","reserve.btn":"బుకింగ్ నిర్ధారించండి",
+    "admin.login":"స్టాఫ్ లాగిన్",
+    "f.name":"పేరు","f.phone":"ఫోన్","f.date":"తేదీ","f.time":"సమయం","f.guests":"ఎంత మంది",
+    "f.requests":"ప్రత్యేక అభ్యర్థనలు","f.type":"ఆర్డర్ రకం","f.address":"డెలివరీ చిరునామా","f.landmark":"ల్యాండ్‌మార్క్","f.pay":"చెల్లింపు",
+    "cart.title":"మీ ఆర్డర్","cart.view":"కార్ట్ చూడండి",
+    "cz.size":"పరిమాణం","cz.spice":"కారం స్థాయి","cz.addons":"యాడ్-ఆన్‌లు","cz.note":"ప్రత్యేక సూచనలు",
+    "promo.apply":"వర్తింపజేయండి","tip.label":"సిబ్బందికి టిప్","filter.veg":"శాకాహారం మాత్రమే",
+    "confirm.title":"ఆర్డర్ నిర్ధారించబడింది!","confirm.no":"మీ ఆర్డర్ నంబర్","confirm.eta":"దాదాపు సిద్ధం",
+    "confirm.track":"నా ఆర్డర్ ట్రాక్ చేయండి","confirm.keep":"బ్రౌజ్ కొనసాగించండి",
+    "welcome.title":"స్పైస్ గార్డెన్‌కు స్వాగతం!","welcome.sub":"ఆర్డర్ చేయడం చాలా సులభం:",
+    "welcome.s1":"మెనూ చూసి, కస్టమైజ్ చేయడానికి వంటకంపై నొక్కండి.","welcome.s2":"కార్ట్‌కు జోడించి, ఆన్‌లైన్ లేదా నగదుతో చెల్లించండి.",
+    "welcome.s3":"“నా ఆర్డర్లు”లో మీ ఆర్డర్‌ను లైవ్‌గా ట్రాక్ చేయండి.","welcome.s4":"వాయిస్‌తో ఫారమ్‌లు నింపడానికి మైక్ నొక్కండి.","welcome.start":"ఆర్డర్ ప్రారంభించండి",
   }
 };
+const LANGS = ["en","hi","te"];
+const LANG_LABEL = { en:"EN", hi:"हि", te:"తె" };
 let lang = store.get("sg_lang", "en");
+if(!LANGS.includes(lang)) lang = "en";
 function applyLang(){
   const dict = I18N[lang];
   $$("[data-i18n]").forEach(el=>{ const v = dict[el.dataset.i18n]; if(v!=null) el.textContent = v; });
   $$("[data-i18n-ph]").forEach(el=>{ const v = dict[el.dataset.i18nPh]; if(v!=null) el.placeholder = v; });
-  $("#langBtn").textContent = lang === "en" ? "EN" : "हि";
+  $("#langBtn").textContent = LANG_LABEL[lang];
   document.documentElement.lang = lang;
 }
-$("#langBtn").onclick = ()=>{ lang = lang === "en" ? "hi" : "en"; store.set("sg_lang", lang); applyLang(); };
+$("#langBtn").onclick = ()=>{
+  lang = LANGS[(LANGS.indexOf(lang)+1) % LANGS.length];
+  store.set("sg_lang", lang); applyLang();
+};
 
 /* ============================================================
    SEARCH (typo-tolerant)
@@ -148,6 +179,14 @@ $("#themeBtn").onclick = ()=>{ store.set("sg_theme", document.body.classList.con
 
 $("#searchInput").oninput = e=>{ searchTerm = e.target.value.trim().toLowerCase(); renderMenu(); };
 
+/* veg-only filter */
+function applyVegToggle(){
+  const b = $("#vegToggle");
+  b.classList.toggle("on", vegOnly);
+  b.setAttribute("aria-pressed", vegOnly ? "true" : "false");
+}
+$("#vegToggle").onclick = ()=>{ vegOnly = !vegOnly; store.set("sg_vegonly", vegOnly); applyVegToggle(); renderMenu(); };
+
 /* ============================================================
    MENU
    ============================================================ */
@@ -168,7 +207,8 @@ function renderMenu(){
   const hint = $("#searchHint"); hint.textContent="";
   let items = menu.filter(m=>{
     const catOk = activeCat==="All" ? true : activeCat==="❤️" ? favs.includes(m.id) : m.category===activeCat;
-    return catOk && searchMatches(m, searchTerm);
+    const vegOk = !vegOnly || m.veg==="veg";
+    return catOk && vegOk && searchMatches(m, searchTerm);
   });
   if(!items.length){
     grid.innerHTML = `<p class="empty">No dishes found${searchTerm?` for “${searchTerm}”`:""}.</p>`;
@@ -501,9 +541,36 @@ function renderMyOrders(){
       cancel.onclick = ()=> cancelMyOrder(o);
       actions.appendChild(cancel);
     }
+    // rate the order once it's completed
+    if(!cancelled && si>=STAGES.length-1){
+      const rate = document.createElement("div");
+      rate.className = "rate-box";
+      if(o.rating){
+        rate.innerHTML = `<span class="muted small">You rated:</span> <span class="stars-static">${"★".repeat(o.rating)}${"☆".repeat(5-o.rating)}</span>`;
+      } else {
+        rate.innerHTML = `<span class="muted small">Rate your order:</span> <span class="stars" role="group" aria-label="Rate this order"></span>`;
+        const box = rate.querySelector(".stars");
+        for(let n=1;n<=5;n++){
+          const st = document.createElement("button");
+          st.className="star"; st.textContent="☆"; st.setAttribute("aria-label", n+" star"+(n>1?"s":""));
+          st.onmouseenter = ()=> [...box.children].forEach((c,i)=> c.textContent = i<n ? "★" : "☆");
+          st.onmouseleave = ()=> [...box.children].forEach(c=> c.textContent = "☆");
+          st.onclick = ()=> rateOrder(o, n);
+          box.appendChild(st);
+        }
+      }
+      row.appendChild(rate);
+    }
     wrap.appendChild(row);
   });
   updateEtas();
+}
+
+function rateOrder(o, n){
+  o.rating = n;
+  store.set("sg_orders", orders);
+  renderMyOrders();
+  toast("⭐ Thanks for rating!");
 }
 
 function cancelMyOrder(o){
@@ -865,6 +932,7 @@ function attachVoice(){
     wrap.appendChild(field);
     const mic = document.createElement("button");
     mic.type = "button"; mic.className = "mic-btn"; mic.title = "Speak to fill";
+    mic.setAttribute("aria-label", "Speak to fill this field");
     mic.textContent = "🎤";
     wrap.appendChild(mic);
     const mode = field.dataset.voice;          // "" or "number"
@@ -892,7 +960,7 @@ function listen(field, mode, mic){
 
   let rec;
   try { rec = new SpeechRec(); } catch(_){ toast("Voice unavailable here — open in a Chrome tab"); return; }
-  rec.lang = lang === "hi" ? "hi-IN" : "en-US";
+  rec.lang = { hi:"hi-IN", te:"te-IN", en:"en-US" }[lang] || "en-US";
   rec.interimResults = false; rec.maxAlternatives = 1;
   activeRec = rec; activeMic = mic;
   mic.classList.add("listening");
@@ -925,10 +993,47 @@ function listen(field, mode, mic){
 }
 
 /* ============================================================
+   INSTALL APP (PWA install prompt)
+   ============================================================ */
+let deferredInstall = null;
+window.addEventListener("beforeinstallprompt", e=>{
+  e.preventDefault();
+  deferredInstall = e;
+  $("#installBtn").hidden = false;
+});
+$("#installBtn").onclick = async ()=>{
+  if(!deferredInstall){ toast("Open the browser menu → ‘Install app’ / ‘Add to Home screen’"); return; }
+  deferredInstall.prompt();
+  await deferredInstall.userChoice;
+  deferredInstall = null;
+  $("#installBtn").hidden = true;
+};
+window.addEventListener("appinstalled", ()=>{ $("#installBtn").hidden = true; toast("✅ App installed!"); });
+
+/* ============================================================
+   OFFLINE BANNER
+   ============================================================ */
+function updateOnline(){ $("#offlineBar").classList.toggle("show", !navigator.onLine); }
+window.addEventListener("online", ()=>{ updateOnline(); toast("✅ Back online"); });
+window.addEventListener("offline", updateOnline);
+
+/* ============================================================
+   WELCOME GUIDE (first visit only)
+   ============================================================ */
+$("#welcomeStart").onclick = ()=> $("#welcomeOverlay").classList.remove("show");
+function maybeShowWelcome(){
+  if(!store.get("sg_seenWelcome", false)){
+    $("#welcomeOverlay").classList.add("show");
+    store.set("sg_seenWelcome", true);
+  }
+}
+
+/* ============================================================
    INIT
    ============================================================ */
 applyLang();
 applyTheme();
+applyVegToggle();
 renderCategories();
 renderMenu();
 renderCart();
@@ -938,3 +1043,5 @@ refreshAdminCounts();
 updateStickyCart();
 attachVoice();
 startEtaTicker();
+updateOnline();
+maybeShowWelcome();

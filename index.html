@@ -23,10 +23,14 @@
     <button class="nav-btn"        data-view="orders"  data-i18n="nav.orders">My Orders</button>
     <button class="nav-btn"        data-view="admin"   data-i18n="nav.admin">Admin</button>
   </nav>
-  <button class="icon-btn" id="langBtn" title="Language">EN</button>
-  <button class="icon-btn" id="themeBtn" title="Toggle dark mode">🌙</button>
-  <button class="cart-pill" id="cartPill">🛒 <span id="cartCount">0</span></button>
+  <button class="icon-btn" id="installBtn" title="Install app" aria-label="Install app" hidden>📲</button>
+  <button class="icon-btn" id="langBtn" title="Change language" aria-label="Change language">EN</button>
+  <button class="icon-btn" id="themeBtn" title="Toggle dark mode" aria-label="Toggle dark mode">🌙</button>
+  <button class="cart-pill" id="cartPill" aria-label="View cart">🛒 <span id="cartCount">0</span></button>
 </header>
+
+<!-- offline banner -->
+<div id="offlineBar" class="offline-bar" role="status">📡 You're offline — showing saved data</div>
 
 <main>
   <!-- ===================== CUSTOMER: MENU ===================== -->
@@ -36,6 +40,9 @@
       <p data-i18n="hero.sub">Fresh, delicious food — order for takeaway or dine-in.</p>
     </div>
 
+    <div class="filter-row">
+      <button class="veg-toggle" id="vegToggle" aria-pressed="false"><span class="veg-dot veg"></span> <span data-i18n="filter.veg">Veg only</span></button>
+    </div>
     <div class="search-wrap">
       <span class="search-ico">🔍</span>
       <input id="searchInput" type="search" data-i18n-ph="search.ph" placeholder="Search dishes — e.g. pizza, paneer…" autocomplete="off" data-voice />
@@ -163,6 +170,22 @@
     </div>
   </section>
 </main>
+
+<!-- ===================== WELCOME GUIDE (first visit) ===================== -->
+<div class="modal-overlay" id="welcomeOverlay">
+  <div class="modal welcome-modal">
+    <div class="welcome-logo">🍽️</div>
+    <h3 data-i18n="welcome.title">Welcome to Spice Garden!</h3>
+    <p class="muted" data-i18n="welcome.sub">Ordering is quick and easy:</p>
+    <ul class="welcome-steps">
+      <li><span>🍕</span><span data-i18n="welcome.s1">Browse the menu and tap a dish to customize it.</span></li>
+      <li><span>🛒</span><span data-i18n="welcome.s2">Add to cart, then pay online or choose cash.</span></li>
+      <li><span>📦</span><span data-i18n="welcome.s3">Track your order live in “My Orders”.</span></li>
+      <li><span>🎤</span><span data-i18n="welcome.s4">Tap the mic to fill forms by voice.</span></li>
+    </ul>
+    <button class="btn primary full" id="welcomeStart" data-i18n="welcome.start">Start ordering</button>
+  </div>
+</div>
 
 <!-- ===================== MOBILE BOTTOM NAV ===================== -->
 <nav class="bottom-nav">
