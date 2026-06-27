@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Spice Garden — Restaurant</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<!-- ===================== HEADER ===================== -->
+<header class="topbar">
+  <div class="brand">
+    <span class="logo">🍽️</span>
+    <span class="brand-name">Spice Garden</span>
+  </div>
+  <nav class="nav">
+    <button class="nav-btn active" data-view="menu">Menu</button>
+    <button class="nav-btn" data-view="reserve">Reserve</button>
+    <button class="nav-btn" data-view="admin">Admin</button>
+  </nav>
+  <button class="cart-pill" id="cartPill">
+    🛒 <span id="cartCount">0</span>
+  </button>
+</header>
+
+<main>
+  <!-- ===================== CUSTOMER: MENU ===================== -->
+  <section id="view-menu" class="view active">
+    <div class="hero">
+      <h1>Welcome to Spice Garden</h1>
+      <p>Fresh, delicious food — order for takeaway or dine-in.</p>
+    </div>
+
+    <div class="category-bar" id="categoryBar"></div>
+    <div class="menu-grid" id="menuGrid"></div>
+  </section>
+
+  <!-- ===================== CUSTOMER: RESERVATION ===================== -->
+  <section id="view-reserve" class="view">
+    <div class="panel narrow">
+      <h2>Book a Table</h2>
+      <p class="muted">Reserve your spot and we'll have it ready.</p>
+      <form id="reserveForm" class="form">
+        <label>Name<input name="name" required placeholder="Your name" /></label>
+        <label>Phone<input name="phone" required placeholder="Mobile number" /></label>
+        <div class="row">
+          <label>Date<input name="date" type="date" required /></label>
+          <label>Time<input name="time" type="time" required /></label>
+        </div>
+        <label>Party size
+          <select name="guests" required>
+            <option value="">Select</option>
+            <option>1</option><option>2</option><option>3</option><option>4</option>
+            <option>5</option><option>6</option><option>7</option><option>8+</option>
+          </select>
+        </label>
+        <label>Special requests<textarea name="notes" placeholder="Birthday, allergies, seating preference..."></textarea></label>
+        <button class="btn primary" type="submit">Confirm Reservation</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- ===================== ADMIN ===================== -->
+  <section id="view-admin" class="view">
+    <!-- Login gate -->
+    <div class="panel narrow" id="adminLogin">
+      <h2>Staff Login</h2>
+      <p class="muted">Sign in as Super Admin, Admin, or Staff.</p>
+      <form id="adminLoginForm" class="form">
+        <label>Username<input name="user" required placeholder="Username" autocomplete="off" /></label>
+        <label>Password<input name="pw" type="password" required placeholder="Password" /></label>
+        <button class="btn primary" type="submit">Log in</button>
+      </form>
+      <div class="login-hint">
+        <strong>Default logins</strong>
+        <div>👑 Super Admin — <code>superadmin</code> / <code>super123</code></div>
+        <div>🛠️ Admin — <code>admin</code> / <code>admin123</code></div>
+        <div>🧑‍🍳 Staff — <code>staff</code> / <code>staff123</code></div>
+      </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="adminDash" class="hidden">
+      <div class="admin-head">
+        <div>
+          <h2>Dashboard</h2>
+          <div class="who-am-i">Signed in as <strong id="meName">—</strong> <span class="role-tag" id="meRole"></span></div>
+        </div>
+        <button class="btn ghost" id="logoutBtn">Log out</button>
+      </div>
+      <div class="tabs">
+        <button class="tab active" data-tab="orders">Orders <span class="badge" id="ordersBadge">0</span></button>
+        <button class="tab" data-tab="reservations">Reservations <span class="badge" id="resBadge">0</span></button>
+        <button class="tab perm-menu" data-tab="menuedit">Manage Menu</button>
+        <button class="tab perm-users" data-tab="users">Manage Users</button>
+      </div>
+
+      <div class="tab-panel active" id="tab-orders"><div id="ordersList"></div></div>
+      <div class="tab-panel" id="tab-reservations"><div id="resList"></div></div>
+
+      <div class="tab-panel" id="tab-menuedit">
+        <form id="menuItemForm" class="form inline-form">
+          <input name="name" required placeholder="Dish name" />
+          <input name="price" type="number" min="0" step="1" required placeholder="Price ₹" />
+          <input name="category" required placeholder="Category" list="catList" />
+          <datalist id="catList"></datalist>
+          <input name="desc" placeholder="Short description" />
+          <button class="btn primary" type="submit">Add item</button>
+        </form>
+        <div id="menuEditList" class="menu-edit-list"></div>
+      </div>
+
+      <div class="tab-panel" id="tab-users">
+        <form id="userForm" class="form inline-form">
+          <input name="user" required placeholder="Username" autocomplete="off" />
+          <input name="pw" required placeholder="Password" />
+          <select name="role" id="newUserRole">
+            <option value="staff">Staff</option>
+            <option value="admin">Admin</option>
+            <option value="superadmin">Super Admin</option>
+          </select>
+          <button class="btn primary" type="submit">Add user</button>
+        </form>
+        <div id="userList" class="menu-edit-list"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ===================== CART DRAWER ===================== -->
+<div class="drawer-overlay" id="drawerOverlay"></div>
+<aside class="drawer" id="cartDrawer">
+  <div class="drawer-head">
+    <h3>Your Order</h3>
+    <button class="close" id="closeCart">✕</button>
+  </div>
+  <div id="cartItems" class="cart-items"></div>
+  <div class="cart-foot">
+    <div class="total-row"><span>Total</span><strong id="cartTotal">₹0</strong></div>
+    <form id="orderForm" class="form">
+      <label>Name<input name="name" required placeholder="Your name" /></label>
+      <label>Phone<input name="phone" required placeholder="Mobile number" /></label>
+      <label>Order type
+        <select name="type">
+          <option>Takeaway</option>
+          <option>Dine-in</option>
+          <option>Home delivery</option>
+        </select>
+      </label>
+      <label>Payment
+        <select name="pay" id="paySelect">
+          <option value="online">Pay Online (UPI / Card)</option>
+          <option value="cash">Cash on pickup / delivery</option>
+        </select>
+      </label>
+      <button class="btn primary full" type="submit" id="placeOrderBtn">Pay & Place Order</button>
+    </form>
+  </div>
+</aside>
+
+<!-- ===================== PAYMENT MODAL ===================== -->
+<div class="modal-overlay" id="payOverlay">
+  <div class="modal" id="payModal">
+    <button class="close pay-close" id="payClose">✕</button>
+    <h3>Pay Online</h3>
+    <p class="muted">Amount to pay</p>
+    <div class="pay-amount" id="payAmount">₹0</div>
+
+    <div class="pay-methods">
+      <button class="pay-method active" data-method="upi">📱 UPI</button>
+      <button class="pay-method" data-method="card">💳 Card</button>
+    </div>
+
+    <!-- UPI -->
+    <div class="pay-pane active" id="pane-upi">
+      <p class="muted small">Open any UPI app and pay to:</p>
+      <div class="upi-id">spicegarden@upi</div>
+      <p class="muted small demo-note">Demo payment — no real money is charged.</p>
+    </div>
+    <!-- Card -->
+    <div class="pay-pane" id="pane-card">
+      <p class="muted small demo-note">Demo checkout — do not enter a real card. Click pay to simulate.</p>
+    </div>
+
+    <button class="btn primary full" id="payNowBtn">Pay ₹0 now</button>
+  </div>
+</div>
+
+<!-- ===================== TOAST ===================== -->
+<div id="toast" class="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
