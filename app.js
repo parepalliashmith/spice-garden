@@ -17,21 +17,23 @@ const store = {
 
 /* ---------- seed menu (first run only) ---------- */
 const DEFAULT_MENU = [
-  { id:1, name:"Margherita Pizza", price:299, category:"Pizza",    emoji:"🍕", desc:"Classic tomato, mozzarella & basil." },
-  { id:2, name:"Paneer Tikka",     price:249, category:"Starters", emoji:"🧆", desc:"Spiced grilled cottage cheese." },
-  { id:3, name:"Veg Burger",       price:149, category:"Burgers",  emoji:"🍔", desc:"Crispy patty, lettuce & sauce." },
-  { id:4, name:"Butter Chicken",   price:329, category:"Mains",    emoji:"🍛", desc:"Creamy tomato chicken curry." },
-  { id:5, name:"Masala Dosa",      price:129, category:"Mains",    emoji:"🥞", desc:"Crispy dosa with potato filling." },
-  { id:6, name:"French Fries",     price:99,  category:"Starters", emoji:"🍟", desc:"Golden, salted & crispy." },
-  { id:7, name:"Chocolate Cake",   price:159, category:"Desserts", emoji:"🍰", desc:"Rich molten chocolate slice." },
-  { id:8, name:"Cold Coffee",      price:119, category:"Drinks",   emoji:"🥤", desc:"Chilled blended coffee." },
+  { id:1, name:"Margherita Pizza", price:299, category:"Pizza",    emoji:"🍕", desc:"Classic tomato, mozzarella & basil.", veg:"veg",    tag:"Bestseller" },
+  { id:2, name:"Paneer Tikka",     price:249, category:"Starters", emoji:"🧆", desc:"Spiced grilled cottage cheese.",     veg:"veg",    tag:"Chef's Special" },
+  { id:3, name:"Veg Burger",       price:149, category:"Burgers",  emoji:"🍔", desc:"Crispy patty, lettuce & sauce.",     veg:"veg",    tag:"" },
+  { id:4, name:"Butter Chicken",   price:329, category:"Mains",    emoji:"🍛", desc:"Creamy tomato chicken curry.",       veg:"nonveg", tag:"Bestseller" },
+  { id:5, name:"Masala Dosa",      price:129, category:"Mains",    emoji:"🥞", desc:"Crispy dosa with potato filling.",   veg:"veg",    tag:"" },
+  { id:6, name:"French Fries",     price:99,  category:"Starters", emoji:"🍟", desc:"Golden, salted & crispy.",           veg:"veg",    tag:"" },
+  { id:7, name:"Chocolate Cake",   price:159, category:"Desserts", emoji:"🍰", desc:"Rich molten chocolate slice.",       veg:"veg",    tag:"" },
+  { id:8, name:"Cold Coffee",      price:119, category:"Drinks",   emoji:"🥤", desc:"Chilled blended coffee.",            veg:"veg",    tag:"" },
 ];
 
 let menu        = store.get("sg_menu", null) || (store.set("sg_menu", DEFAULT_MENU), DEFAULT_MENU);
 let orders       = store.get("sg_orders", []);
 let reservations = store.get("sg_res", []);
+let myOrderIds   = store.get("sg_myorders", []);   // ids of orders placed from THIS device
 let cart         = {};            // id -> qty (session only)
 let activeCat    = "All";
+let searchTerm   = "";
 
 const $  = (s, el=document) => el.querySelector(s);
 const $$ = (s, el=document) => [...el.querySelectorAll(s)];
@@ -41,14 +43,30 @@ const emojiFor = c => ({Pizza:"🍕",Starters:"🍟",Burgers:"🍔",Mains:"🍛"
 /* ============================================================
    NAVIGATION
    ============================================================ */
-$$(".nav-btn").forEach(btn=>{
-  btn.onclick = ()=>{
-    $$(".nav-btn").forEach(b=>b.classList.remove("active"));
-    btn.classList.add("active");
-    $$(".view").forEach(v=>v.classList.remove("active"));
-    $("#view-"+btn.dataset.view).classList.add("active");
-  };
-});
+function showView(name){
+  $$(".nav-btn").forEach(b=>b.classList.toggle("active", b.dataset.view===name));
+  $$(".view").forEach(v=>v.classList.remove("active"));
+  $("#view-"+name).classList.add("active");
+  if(name==="orders") renderMyOrders();
+  updateStickyCart();
+}
+$$(".nav-btn").forEach(btn=>{ btn.onclick = ()=> showView(btn.dataset.view); });
+
+/* ---------- dark mode ---------- */
+function applyTheme(){
+  const dark = store.get("sg_theme","light") === "dark";
+  document.body.classList.toggle("dark", dark);
+  $("#themeBtn").textContent = dark ? "☀️" : "🌙";
+}
+$("#themeBtn").onclick = ()=>{
+  const next = document.body.classList.contains("dark") ? "light" : "dark";
+  store.set("sg_theme", next);
+  applyTheme();
+};
+applyTheme();
+
+/* ---------- search ---------- */
+$("#searchInput").oninput = e=>{ searchTerm = e.target.value.trim().toLowerCase(); renderMenu(); };
 
 /* ============================================================
    MENU (customer)
@@ -69,20 +87,37 @@ function renderCategories(){
 function renderMenu(){
   const grid = $("#menuGrid");
   grid.innerHTML = "";
-  const items = menu.filter(m=> activeCat==="All" || m.category===activeCat);
-  if(!items.length){ grid.innerHTML = `<p class="empty">No dishes here yet.</p>`; return; }
+  const items = menu.filter(m=>
+    (activeCat==="All" || m.category===activeCat) &&
+    (!searchTerm || (m.name+" "+(m.desc||"")).toLowerCase().includes(searchTerm))
+  );
+  if(!items.length){
+    grid.innerHTML = `<p class="empty">No dishes found${searchTerm?` for “${searchTerm}”`:""}.</p>`;
+    return;
+  }
   items.forEach(m=>{
     const card = document.createElement("div");
     card.className = "dish";
+    const veg = m.veg ? `<span class="veg-dot ${m.veg}" title="${m.veg==="veg"?"Veg":"Non-veg"}"></span>` : "";
+    const tag = m.tag ? `<span class="tag-chip ${m.tag.replace(/[^a-zA-Z]/g,'')}">${m.tag}</span>` : "";
+    const qty = cart[m.id] || 0;
+    const control = qty > 0
+      ? `<span class="stepper"><button class="minus">−</button><span class="q">${qty}</span><button class="plus">+</button></span>`
+      : `<button class="btn primary small add">Add +</button>`;
     card.innerHTML = `
       <div class="emoji">${m.emoji || emojiFor(m.category)}</div>
-      <h3>${m.name}</h3>
+      <div class="dish-head">${veg}<h3>${m.name}</h3></div>
+      ${tag}
       <p class="desc">${m.desc || ""}</p>
       <div class="bottom">
         <span class="price">${rupee(m.price)}</span>
-        <button class="btn primary small">Add +</button>
+        ${control}
       </div>`;
-    card.querySelector("button").onclick = ()=> addToCart(m.id);
+    const addBtn = card.querySelector(".add");
+    if(addBtn) addBtn.onclick = ()=> addToCart(m.id);
+    const minus = card.querySelector(".minus"), plus = card.querySelector(".plus");
+    if(minus) minus.onclick = ()=> changeQty(m.id, -1);
+    if(plus)  plus.onclick  = ()=> changeQty(m.id, 1);
     grid.appendChild(card);
   });
 }
@@ -92,13 +127,13 @@ function renderMenu(){
    ============================================================ */
 function addToCart(id){
   cart[id] = (cart[id] || 0) + 1;
-  renderCart();
+  renderCart(); renderMenu();
   toast("Added to order");
 }
 function changeQty(id, delta){
   cart[id] = (cart[id] || 0) + delta;
   if(cart[id] <= 0) delete cart[id];
-  renderCart();
+  renderCart(); renderMenu();
 }
 function cartTotal(){
   return Object.entries(cart).reduce((sum,[id,q])=>{
@@ -127,6 +162,21 @@ function renderCart(){
     });
   }
   $("#cartTotal").textContent = rupee(cartTotal());
+  updateStickyCart();
+}
+
+/* sticky "View Cart" bar — shown only on the menu view when cart has items */
+function updateStickyCart(){
+  const count = Object.values(cart).reduce((s,q)=>s+q,0);
+  const onMenu = $("#view-menu").classList.contains("active");
+  const bar = $("#stickyCart");
+  if(count > 0 && onMenu){
+    $("#stickyCount").textContent = count + (count===1?" item":" items");
+    $("#stickyTotal").textContent = rupee(cartTotal());
+    bar.classList.add("show");
+  } else {
+    bar.classList.remove("show");
+  }
 }
 
 function openCart(open){
@@ -134,6 +184,7 @@ function openCart(open){
   $("#drawerOverlay").classList.toggle("show", open);
 }
 $("#cartPill").onclick   = ()=> openCart(true);
+$("#stickyCart").onclick = ()=> openCart(true);
 $("#closeCart").onclick  = ()=> openCart(false);
 $("#drawerOverlay").onclick = ()=> openCart(false);
 
@@ -170,12 +221,53 @@ $("#orderForm").onsubmit = e=>{
 function saveOrder(order, msg){
   orders.unshift(order);
   store.set("sg_orders", orders);
-  cart = {}; renderCart();
+  myOrderIds.unshift(order.id);                 // remember on THIS device for tracking
+  store.set("sg_myorders", myOrderIds);
+  cart = {}; renderCart(); renderMenu();
   $("#orderForm").reset();
   $("#placeOrderBtn").textContent = "Pay & Place Order";
   openCart(false);
   refreshAdminCounts();
   toast(msg);
+  showConfirmation(order);
+}
+
+/* ---------- order confirmation + tracking ---------- */
+function showConfirmation(order){
+  $("#confirmNo").textContent = "#" + String(order.id).slice(-4);
+  $("#confirmOverlay").classList.add("show");
+}
+$("#confirmClose").onclick = ()=> $("#confirmOverlay").classList.remove("show");
+$("#confirmTrack").onclick = ()=>{
+  $("#confirmOverlay").classList.remove("show");
+  showView("orders");
+};
+
+function renderMyOrders(){
+  const wrap = $("#myOrdersList");
+  const mine = myOrderIds.map(id => orders.find(o=>o.id===id)).filter(Boolean);
+  if(!mine.length){ wrap.innerHTML = `<p class="empty">You haven't placed any orders yet.</p>`; return; }
+  wrap.innerHTML = "";
+  mine.forEach(o=>{
+    const ready = o.status === "done";
+    const row = document.createElement("div");
+    row.className = "track-row";
+    row.innerHTML = `
+      <div class="top">
+        <div>
+          <strong>#${String(o.id).slice(-4)}</strong> · ${o.type}
+          <div class="meta">${o.items.reduce((s,i)=>s+i.qty,0)} items · ${rupee(o.total)} · ${o.paid?"Paid":(o.payMethod==="online"?"Unpaid":"Cash")}</div>
+        </div>
+        <span class="track-status ${ready?"ready":"preparing"}">${ready?"✅ Ready":"👨‍🍳 Preparing"}</span>
+      </div>
+      <div class="track-steps">
+        <span class="dot on"></span><span class="bar on"></span>
+        <span class="dot on"></span><span class="bar ${ready?"on":""}"></span>
+        <span class="dot ${ready?"on":""}"></span>
+        <span style="margin-left:6px">Placed → Preparing → Ready</span>
+      </div>`;
+    wrap.appendChild(row);
+  });
 }
 
 /* ============================================================
@@ -430,6 +522,7 @@ $("#menuItemForm").onsubmit = e=>{
     id: Date.now(),
     name:f.name.value, price:Number(f.price.value),
     category:f.category.value, desc:f.desc.value,
+    veg:f.veg.value, tag:f.tag.value,
     emoji: emojiFor(f.category.value)
   });
   store.set("sg_menu", menu);
@@ -449,8 +542,10 @@ function renderMenuEditor(){
     row.className = "menu-edit-row";
     row.innerHTML = `
       <span style="font-size:22px">${m.emoji||emojiFor(m.category)}</span>
+      ${m.veg?`<span class="veg-dot ${m.veg}"></span>`:""}
       <span class="n">${m.name}</span>
       <span class="c">${m.category}</span>
+      ${m.tag?`<span class="tag-chip ${m.tag.replace(/[^a-zA-Z]/g,'')}">${m.tag}</span>`:""}
       <span class="pr">${rupee(m.price)}</span>`;
     const del = document.createElement("button");
     del.className="btn danger small"; del.textContent="Remove";
@@ -524,6 +619,47 @@ function toast(msg){
 }
 
 /* ============================================================
+   NEW-ORDER ALERT (sound + highlight for staff/admin)
+   ============================================================ */
+let audioCtx = null;
+function beep(){
+  try{
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    if(audioCtx.state === "suspended") audioCtx.resume();
+    [880, 1175].forEach((freq, i)=>{                 // two-tone "ding-dong"
+      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.frequency.value = freq; o.type = "sine";
+      o.connect(g); g.connect(audioCtx.destination);
+      const t = audioCtx.currentTime + i*0.18;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.25, t+0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t+0.16);
+      o.start(t); o.stop(t+0.18);
+    });
+  }catch(_){ /* audio not available */ }
+}
+function notifyNewOrder(){
+  if(!me) return;                       // only alert a logged-in staff/admin
+  beep();
+  toast("🔔 New order received!");
+  renderOrders(); refreshAdminCounts();
+}
+/* customer order in a DIFFERENT browser tab → fire alert in the staff tab */
+window.addEventListener("storage", e=>{
+  if(e.key === "sg_orders"){
+    orders = store.get("sg_orders", []);
+    notifyNewOrder();
+  }
+});
+
+/* ============================================================
+   PWA — installable + offline (only over http(s), not file://)
+   ============================================================ */
+if("serviceWorker" in navigator && location.protocol.startsWith("http")){
+  window.addEventListener("load", ()=> navigator.serviceWorker.register("sw.js").catch(()=>{}));
+}
+
+/* ============================================================
    INIT
    ============================================================ */
 renderCategories();
@@ -531,3 +667,4 @@ renderMenu();
 renderCart();
 initReserveDefaults();
 refreshAdminCounts();
+updateStickyCart();

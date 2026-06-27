@@ -4,6 +4,9 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Spice Garden — Restaurant</title>
+<meta name="theme-color" content="#e0632a" />
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="icon-192.png" />
 <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -17,8 +20,10 @@
   <nav class="nav">
     <button class="nav-btn active" data-view="menu">Menu</button>
     <button class="nav-btn" data-view="reserve">Reserve</button>
+    <button class="nav-btn" data-view="orders">My Orders</button>
     <button class="nav-btn" data-view="admin">Admin</button>
   </nav>
+  <button class="icon-btn" id="themeBtn" title="Toggle dark mode">🌙</button>
   <button class="cart-pill" id="cartPill">
     🛒 <span id="cartCount">0</span>
   </button>
@@ -32,8 +37,22 @@
       <p>Fresh, delicious food — order for takeaway or dine-in.</p>
     </div>
 
+    <div class="search-wrap">
+      <span class="search-ico">🔍</span>
+      <input id="searchInput" type="search" placeholder="Search dishes — e.g. pizza, paneer…" autocomplete="off" />
+    </div>
+
     <div class="category-bar" id="categoryBar"></div>
     <div class="menu-grid" id="menuGrid"></div>
+  </section>
+
+  <!-- ===================== CUSTOMER: MY ORDERS (tracking) ===================== -->
+  <section id="view-orders" class="view">
+    <div class="panel">
+      <h2>My Orders</h2>
+      <p class="muted">Track the orders you placed from this device.</p>
+      <div id="myOrdersList"></div>
+    </div>
   </section>
 
   <!-- ===================== CUSTOMER: RESERVATION ===================== -->
@@ -122,6 +141,16 @@
           <input name="category" required placeholder="Category" list="catList" />
           <datalist id="catList"></datalist>
           <input name="desc" placeholder="Short description" />
+          <select name="veg">
+            <option value="veg">🟢 Veg</option>
+            <option value="nonveg">🔴 Non-veg</option>
+          </select>
+          <select name="tag">
+            <option value="">No tag</option>
+            <option value="Bestseller">⭐ Bestseller</option>
+            <option value="Spicy">🌶️ Spicy</option>
+            <option value="Chef's Special">👨‍🍳 Chef's Special</option>
+          </select>
           <button class="btn primary" type="submit">Add item</button>
         </form>
         <div id="menuEditList" class="menu-edit-list"></div>
@@ -143,6 +172,25 @@
     </div>
   </section>
 </main>
+
+<!-- ===================== STICKY CART BAR (mobile-friendly) ===================== -->
+<button class="sticky-cart" id="stickyCart">
+  <span id="stickyCount">0 items</span>
+  <span>View Cart · <strong id="stickyTotal">₹0</strong> →</span>
+</button>
+
+<!-- ===================== ORDER CONFIRMATION MODAL ===================== -->
+<div class="modal-overlay" id="confirmOverlay">
+  <div class="modal confirm-modal">
+    <div class="confirm-check">✅</div>
+    <h3>Order Confirmed!</h3>
+    <p class="muted">Your order number is</p>
+    <div class="order-no" id="confirmNo">#0000</div>
+    <p class="confirm-eta">⏱️ Ready in about <strong>20 minutes</strong></p>
+    <button class="btn primary full" id="confirmTrack">Track my order</button>
+    <button class="btn ghost full" id="confirmClose" style="margin-top:8px">Keep browsing</button>
+  </div>
+</div>
 
 <!-- ===================== CART DRAWER ===================== -->
 <div class="drawer-overlay" id="drawerOverlay"></div>
