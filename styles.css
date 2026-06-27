@@ -257,6 +257,9 @@ body.dark .auth-tab.active{background:#3a2a1f}
 body.dark .demo-otp{background:#2c2117}
 .auth-msg{font-size:13px;font-weight:600;margin:10px 0 0;min-height:16px}
 .auth-msg.bad{color:#ffe0d6}
+.role-note{margin-top:14px;padding:11px 13px;background:#faf3ea;border:1px dashed var(--line);border-radius:10px;font-size:13px;color:var(--muted);line-height:1.6}
+.role-note code{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-weight:700;color:var(--brand)}
+body.dark .role-note{background:#2c2117}
 .auth-card .auth-msg{color:var(--muted)} .auth-card .auth-msg.bad{color:#c0392b} .auth-card .auth-msg.good{color:var(--green)}
 
 /* team-only nav (hidden for customers) */

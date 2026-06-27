@@ -847,18 +847,23 @@ function checkOtp(phone, code){
    LOGIN GATE
    ============================================================ */
 let authRole = "customer";   // tab choice: customer | staff
+function updateRoleNotes(){
+  $("#customerNote").classList.toggle("hidden", authRole!=="customer");
+  $("#staffNote").classList.toggle("hidden", authRole!=="staff");
+}
 $$(".auth-tab").forEach(t=> t.onclick = ()=>{
   $$(".auth-tab").forEach(x=>x.classList.remove("active"));
   t.classList.add("active");
   authRole = t.dataset.role;
   showAuthStep("phone");
   $("#authMsg").textContent=""; $("#authMsg").className="auth-msg";
+  updateRoleNotes();
 });
 function showAuthStep(which){
   $("#authPhoneStep").classList.toggle("hidden", which!=="phone");
   $("#authOtpStep").classList.toggle("hidden", which!=="otp");
 }
-function openGate(){ $("#authGate").classList.add("show"); showAuthStep("phone"); }
+function openGate(){ $("#authGate").classList.add("show"); showAuthStep("phone"); updateRoleNotes(); }
 function closeGate(){ $("#authGate").classList.remove("show"); }
 
 $("#sendOtpBtn").onclick = ()=>{
