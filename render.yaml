@@ -1,0 +1,8 @@
+# Render Blueprint — deploys Spice Garden as a free static site.
+# In Render: New → Blueprint → connect this repo (or use New → Static Site manually).
+services:
+  - type: web
+    name: spice-garden
+    runtime: static
+    buildCommand: ""
+    staticPublishPath: .
