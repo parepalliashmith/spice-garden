@@ -18,29 +18,29 @@
     <span class="brand-name">Spice Garden</span>
   </div>
   <nav class="nav">
-    <button class="nav-btn active" data-view="menu">Menu</button>
-    <button class="nav-btn" data-view="reserve">Reserve</button>
-    <button class="nav-btn" data-view="orders">My Orders</button>
-    <button class="nav-btn" data-view="admin">Admin</button>
+    <button class="nav-btn active" data-view="menu"    data-i18n="nav.menu">Menu</button>
+    <button class="nav-btn"        data-view="reserve" data-i18n="nav.reserve">Reserve</button>
+    <button class="nav-btn"        data-view="orders"  data-i18n="nav.orders">My Orders</button>
+    <button class="nav-btn"        data-view="admin"   data-i18n="nav.admin">Admin</button>
   </nav>
+  <button class="icon-btn" id="langBtn" title="Language">EN</button>
   <button class="icon-btn" id="themeBtn" title="Toggle dark mode">🌙</button>
-  <button class="cart-pill" id="cartPill">
-    🛒 <span id="cartCount">0</span>
-  </button>
+  <button class="cart-pill" id="cartPill">🛒 <span id="cartCount">0</span></button>
 </header>
 
 <main>
   <!-- ===================== CUSTOMER: MENU ===================== -->
   <section id="view-menu" class="view active">
     <div class="hero">
-      <h1>Welcome to Spice Garden</h1>
-      <p>Fresh, delicious food — order for takeaway or dine-in.</p>
+      <h1 data-i18n="hero.title">Welcome to Spice Garden</h1>
+      <p data-i18n="hero.sub">Fresh, delicious food — order for takeaway or dine-in.</p>
     </div>
 
     <div class="search-wrap">
       <span class="search-ico">🔍</span>
-      <input id="searchInput" type="search" placeholder="Search dishes — e.g. pizza, paneer…" autocomplete="off" />
+      <input id="searchInput" type="search" data-i18n-ph="search.ph" placeholder="Search dishes — e.g. pizza, paneer…" autocomplete="off" />
     </div>
+    <div id="searchHint" class="search-hint"></div>
 
     <div class="category-bar" id="categoryBar"></div>
     <div class="menu-grid" id="menuGrid"></div>
@@ -49,8 +49,8 @@
   <!-- ===================== CUSTOMER: MY ORDERS (tracking) ===================== -->
   <section id="view-orders" class="view">
     <div class="panel">
-      <h2>My Orders</h2>
-      <p class="muted">Track the orders you placed from this device.</p>
+      <h2 data-i18n="orders.title">My Orders</h2>
+      <p class="muted" data-i18n="orders.sub">Track the orders you placed from this device.</p>
       <div id="myOrdersList"></div>
     </div>
   </section>
@@ -58,33 +58,32 @@
   <!-- ===================== CUSTOMER: RESERVATION ===================== -->
   <section id="view-reserve" class="view">
     <div class="panel narrow">
-      <h2>Book a Table</h2>
-      <p class="muted">Reserve your spot and we'll have it ready.</p>
+      <h2 data-i18n="reserve.title">Book a Table</h2>
+      <p class="muted" data-i18n="reserve.sub">Reserve your spot and we'll have it ready.</p>
       <form id="reserveForm" class="form">
-        <label>Name<input name="name" required placeholder="Your name" /></label>
-        <label>Phone<input name="phone" required placeholder="Mobile number" /></label>
+        <label><span data-i18n="f.name">Name</span><input name="name" required placeholder="Your name" /></label>
+        <label><span data-i18n="f.phone">Phone</span><input name="phone" required placeholder="Mobile number" /></label>
         <div class="row">
-          <label>Date<input name="date" type="date" required /></label>
-          <label>Time<input name="time" type="time" required /></label>
+          <label><span data-i18n="f.date">Date</span><input name="date" type="date" required /></label>
+          <label><span data-i18n="f.time">Time</span><input name="time" type="time" required /></label>
         </div>
-        <label>Party size
+        <label><span data-i18n="f.guests">Party size</span>
           <select name="guests" required>
             <option value="">Select</option>
             <option>1</option><option>2</option><option>3</option><option>4</option>
             <option>5</option><option>6</option><option>7</option><option>8+</option>
           </select>
         </label>
-        <label>Special requests<textarea name="notes" placeholder="Birthday, allergies, seating preference..."></textarea></label>
-        <button class="btn primary" type="submit">Confirm Reservation</button>
+        <label><span data-i18n="f.requests">Special requests</span><textarea name="notes" placeholder="Birthday, allergies, seating preference..."></textarea></label>
+        <button class="btn primary" type="submit" data-i18n="reserve.btn">Confirm Reservation</button>
       </form>
     </div>
   </section>
 
   <!-- ===================== ADMIN ===================== -->
   <section id="view-admin" class="view">
-    <!-- Login gate -->
     <div class="panel narrow" id="adminLogin">
-      <h2>Staff Login</h2>
+      <h2 data-i18n="admin.login">Staff Login</h2>
       <p class="muted">Sign in as Super Admin, Admin, or Staff.</p>
       <form id="adminLoginForm" class="form">
         <label>Username<input name="user" required placeholder="Username" autocomplete="off" /></label>
@@ -99,7 +98,6 @@
       </div>
     </div>
 
-    <!-- Dashboard -->
     <div id="adminDash" class="hidden">
       <div class="admin-head">
         <div>
@@ -110,18 +108,9 @@
       </div>
 
       <div class="stats">
-        <div class="stat">
-          <div class="stat-label">Orders today</div>
-          <div class="stat-value" id="statOrdersToday">0</div>
-        </div>
-        <div class="stat perm-revenue">
-          <div class="stat-label">Today's revenue</div>
-          <div class="stat-value money" id="statRevToday">₹0</div>
-        </div>
-        <div class="stat perm-revenue">
-          <div class="stat-label">Total revenue</div>
-          <div class="stat-value money" id="statRevTotal">₹0</div>
-        </div>
+        <div class="stat"><div class="stat-label">Orders today</div><div class="stat-value" id="statOrdersToday">0</div></div>
+        <div class="stat perm-revenue"><div class="stat-label">Today's revenue</div><div class="stat-value money" id="statRevToday">₹0</div></div>
+        <div class="stat perm-revenue"><div class="stat-label">Total revenue</div><div class="stat-value money" id="statRevTotal">₹0</div></div>
       </div>
 
       <div class="tabs">
@@ -151,7 +140,9 @@
             <option value="Spicy">🌶️ Spicy</option>
             <option value="Chef's Special">👨‍🍳 Chef's Special</option>
           </select>
-          <button class="btn primary" type="submit">Add item</button>
+          <label class="photo-pick">📷 Photo<input name="photo" type="file" accept="image/*" /></label>
+          <button class="btn primary" type="submit" id="menuFormBtn">Add item</button>
+          <button class="btn ghost" type="button" id="menuFormCancel" hidden>Cancel</button>
         </form>
         <div id="menuEditList" class="menu-edit-list"></div>
       </div>
@@ -173,22 +164,53 @@
   </section>
 </main>
 
-<!-- ===================== STICKY CART BAR (mobile-friendly) ===================== -->
+<!-- ===================== STICKY CART BAR ===================== -->
 <button class="sticky-cart" id="stickyCart">
   <span id="stickyCount">0 items</span>
-  <span>View Cart · <strong id="stickyTotal">₹0</strong> →</span>
+  <span><span data-i18n="cart.view">View Cart</span> · <strong id="stickyTotal">₹0</strong> →</span>
 </button>
+
+<!-- ===================== CUSTOMIZE MODAL ===================== -->
+<div class="modal-overlay" id="customizeOverlay">
+  <div class="modal" id="customizeModal">
+    <button class="close" id="customizeClose">✕</button>
+    <h3 id="cz-name">Dish</h3>
+    <p class="muted small" id="cz-desc"></p>
+
+    <div class="cz-group">
+      <div class="cz-title" data-i18n="cz.size">Size</div>
+      <div id="cz-sizes" class="cz-options"></div>
+    </div>
+    <div class="cz-group">
+      <div class="cz-title" data-i18n="cz.spice">Spice level</div>
+      <div id="cz-spice" class="cz-options"></div>
+    </div>
+    <div class="cz-group">
+      <div class="cz-title" data-i18n="cz.addons">Add-ons</div>
+      <div id="cz-addons" class="cz-options col"></div>
+    </div>
+    <div class="cz-group">
+      <div class="cz-title" data-i18n="cz.note">Special instructions</div>
+      <input id="cz-note" placeholder="e.g. no onions, less salt…" />
+    </div>
+
+    <div class="cz-foot">
+      <span class="stepper big"><button id="cz-minus">−</button><span class="q" id="cz-qty">1</span><button id="cz-plus">+</button></span>
+      <button class="btn primary" id="cz-add">Add · ₹0</button>
+    </div>
+  </div>
+</div>
 
 <!-- ===================== ORDER CONFIRMATION MODAL ===================== -->
 <div class="modal-overlay" id="confirmOverlay">
   <div class="modal confirm-modal">
     <div class="confirm-check">✅</div>
-    <h3>Order Confirmed!</h3>
-    <p class="muted">Your order number is</p>
+    <h3 data-i18n="confirm.title">Order Confirmed!</h3>
+    <p class="muted" data-i18n="confirm.no">Your order number is</p>
     <div class="order-no" id="confirmNo">#0000</div>
-    <p class="confirm-eta">⏱️ Ready in about <strong>20 minutes</strong></p>
-    <button class="btn primary full" id="confirmTrack">Track my order</button>
-    <button class="btn ghost full" id="confirmClose" style="margin-top:8px">Keep browsing</button>
+    <p class="confirm-eta">⏱️ <span data-i18n="confirm.eta">Ready in about</span> <strong>20 minutes</strong></p>
+    <button class="btn primary full" id="confirmTrack" data-i18n="confirm.track">Track my order</button>
+    <button class="btn ghost full" id="confirmClose" style="margin-top:8px" data-i18n="confirm.keep">Keep browsing</button>
   </div>
 </div>
 
@@ -196,29 +218,56 @@
 <div class="drawer-overlay" id="drawerOverlay"></div>
 <aside class="drawer" id="cartDrawer">
   <div class="drawer-head">
-    <h3>Your Order</h3>
+    <h3 data-i18n="cart.title">Your Order</h3>
     <button class="close" id="closeCart">✕</button>
   </div>
   <div id="cartItems" class="cart-items"></div>
   <div class="cart-foot">
-    <div class="total-row"><span>Total</span><strong id="cartTotal">₹0</strong></div>
     <form id="orderForm" class="form">
-      <label>Name<input name="name" required placeholder="Your name" /></label>
-      <label>Phone<input name="phone" required placeholder="Mobile number" /></label>
-      <label>Order type
-        <select name="type">
+      <label><span data-i18n="f.type">Order type</span>
+        <select name="type" id="typeSelect">
           <option>Takeaway</option>
           <option>Dine-in</option>
           <option>Home delivery</option>
         </select>
       </label>
-      <label>Payment
+
+      <!-- delivery address (only for Home delivery) -->
+      <div id="addressBlock" class="hidden">
+        <label><span data-i18n="f.address">Delivery address</span><textarea name="address" placeholder="House / flat, street, area"></textarea></label>
+        <label><span data-i18n="f.landmark">Landmark</span><input name="landmark" placeholder="Nearby landmark (optional)" /></label>
+      </div>
+
+      <!-- promo -->
+      <div class="promo-row">
+        <input id="promoInput" placeholder="Promo code (e.g. WELCOME10)" />
+        <button class="btn ghost small" type="button" id="promoBtn" data-i18n="promo.apply">Apply</button>
+      </div>
+      <div id="promoMsg" class="promo-msg"></div>
+
+      <!-- tip -->
+      <div class="tip-row">
+        <span class="muted small" data-i18n="tip.label">Tip the staff</span>
+        <div class="tip-btns" id="tipBtns">
+          <button type="button" data-tip="0" class="active">₹0</button>
+          <button type="button" data-tip="20">₹20</button>
+          <button type="button" data-tip="50">₹50</button>
+          <button type="button" data-tip="pct">10%</button>
+        </div>
+      </div>
+
+      <!-- bill breakdown -->
+      <div class="bill" id="billBreakdown"></div>
+
+      <label><span data-i18n="f.name">Name</span><input name="name" required placeholder="Your name" /></label>
+      <label><span data-i18n="f.phone">Phone</span><input name="phone" required placeholder="Mobile number" /></label>
+      <label><span data-i18n="f.pay">Payment</span>
         <select name="pay" id="paySelect">
           <option value="online">Pay Online (UPI / Card)</option>
           <option value="cash">Cash on pickup / delivery</option>
         </select>
       </label>
-      <button class="btn primary full" type="submit" id="placeOrderBtn">Pay & Place Order</button>
+      <button class="btn primary full" type="submit" id="placeOrderBtn">Pay &amp; Place Order</button>
     </form>
   </div>
 </aside>
@@ -230,23 +279,18 @@
     <h3>Pay Online</h3>
     <p class="muted">Amount to pay</p>
     <div class="pay-amount" id="payAmount">₹0</div>
-
     <div class="pay-methods">
       <button class="pay-method active" data-method="upi">📱 UPI</button>
       <button class="pay-method" data-method="card">💳 Card</button>
     </div>
-
-    <!-- UPI -->
     <div class="pay-pane active" id="pane-upi">
       <p class="muted small">Open any UPI app and pay to:</p>
       <div class="upi-id">spicegarden@upi</div>
       <p class="muted small demo-note">Demo payment — no real money is charged.</p>
     </div>
-    <!-- Card -->
     <div class="pay-pane" id="pane-card">
       <p class="muted small demo-note">Demo checkout — do not enter a real card. Click pay to simulate.</p>
     </div>
-
     <button class="btn primary full" id="payNowBtn">Pay ₹0 now</button>
   </div>
 </div>
