@@ -13,12 +13,40 @@ const DEFAULT_MENU = [
   { id:1, name:"Margherita Pizza", price:299, category:"Pizza",    emoji:"🍕", desc:"Classic tomato, mozzarella & basil.", veg:"veg",    tag:"Bestseller" },
   { id:2, name:"Paneer Tikka",     price:249, category:"Starters", emoji:"🧆", desc:"Spiced grilled cottage cheese.",     veg:"veg",    tag:"Chef's Special" },
   { id:3, name:"Veg Burger",       price:149, category:"Burgers",  emoji:"🍔", desc:"Crispy patty, lettuce & sauce.",     veg:"veg",    tag:"" },
-  { id:4, name:"Butter Chicken",   price:329, category:"Mains",    emoji:"🍛", desc:"Creamy tomato chicken curry.",       veg:"nonveg", tag:"Bestseller" },
+  { id:4, name:"Butter Chicken",   price:380, category:"Mains",    emoji:"🍛", desc:"Creamy tomato chicken curry.",       veg:"nonveg", tag:"Bestseller" },
   { id:5, name:"Masala Dosa",      price:129, category:"Mains",    emoji:"🥞", desc:"Crispy dosa with potato filling.",   veg:"veg",    tag:"" },
   { id:6, name:"French Fries",     price:99,  category:"Starters", emoji:"🍟", desc:"Golden, salted & crispy.",           veg:"veg",    tag:"" },
   { id:7, name:"Chocolate Cake",   price:159, category:"Desserts", emoji:"🍰", desc:"Rich molten chocolate slice.",       veg:"veg",    tag:"" },
   { id:8, name:"Cold Coffee",      price:119, category:"Drinks",   emoji:"🥤", desc:"Chilled blended coffee.",            veg:"veg",    tag:"" },
+
+  /* Rice & Noodles */
+  { id:101, name:"Veg Fried Rice",      price:200, category:"Rice & Noodles", emoji:"🍚", desc:"Wok-tossed rice with veggies.",          veg:"veg",    tag:"" },
+  { id:102, name:"Chicken Fried Rice",  price:250, category:"Rice & Noodles", emoji:"🍚", desc:"Rice tossed with chicken & spices.",     veg:"nonveg", tag:"" },
+  { id:103, name:"Veg Noodles",         price:200, category:"Rice & Noodles", emoji:"🍜", desc:"Hakka noodles with crunchy veggies.",    veg:"veg",    tag:"" },
+  { id:104, name:"Chicken Noodles",     price:250, category:"Rice & Noodles", emoji:"🍜", desc:"Noodles tossed with chicken.",           veg:"nonveg", tag:"" },
+
+  /* Non-veg starters */
+  { id:105, name:"Chicken 65",          price:280, category:"Starters", emoji:"🍗", desc:"Crispy, spicy deep-fried chicken.",  veg:"nonveg", tag:"Spicy" },
+  { id:106, name:"Chilli Chicken",      price:300, category:"Starters", emoji:"🌶️", desc:"Indo-Chinese chilli chicken.",      veg:"nonveg", tag:"Spicy" },
+
+  /* Curries / Mains */
+  { id:107, name:"Kadai Chicken",       price:370, category:"Mains", emoji:"🍛", desc:"Chicken in spicy kadai gravy.",        veg:"nonveg", tag:"" },
+  { id:108, name:"Paneer Butter Masala",price:300, category:"Mains", emoji:"🧈", desc:"Paneer in rich, buttery tomato gravy.", veg:"veg",  tag:"Bestseller" },
+
+  /* Biryani */
+  { id:109, name:"Chicken Dum Biryani", price:300, category:"Biryani", emoji:"🍛", desc:"Fragrant dum-cooked chicken biryani.", veg:"nonveg", tag:"Bestseller" },
+  { id:110, name:"Mutton Biryani",      price:400, category:"Biryani", emoji:"🍛", desc:"Slow-cooked spicy mutton biryani.",     veg:"nonveg", tag:"Chef's Special" },
+
+  /* Breads */
+  { id:111, name:"Butter Naan",         price:45, category:"Breads", emoji:"🫓", desc:"Soft tandoor naan with butter.", veg:"veg", tag:"" },
+  { id:112, name:"Garlic Naan",         price:55, category:"Breads", emoji:"🫓", desc:"Naan topped with garlic & herbs.", veg:"veg", tag:"" },
+  { id:113, name:"Tandoori Roti",       price:25, category:"Breads", emoji:"🫓", desc:"Whole-wheat tandoor roti.", veg:"veg", tag:"" },
+
+  /* Drinks */
+  { id:114, name:"Soft Drinks",         price:40, category:"Drinks", emoji:"🥤", desc:"Chilled soft drink (300ml).", veg:"veg", tag:"" },
+  { id:115, name:"Mineral Water",       price:30, category:"Drinks", emoji:"💧", desc:"Packaged drinking water (1L).", veg:"veg", tag:"" },
 ];
+const MENU_VERSION = 2;   // bump when DEFAULT_MENU changes, to push new items to existing users
 
 /* customization options (shared by all dishes) */
 const SIZES   = [ {name:"Regular", price:0}, {name:"Large", price:60} ];
@@ -34,7 +62,15 @@ const PROMOS = {
   FREESHIP:  { kind:"ship", value:0,  label:"Free delivery" },
 };
 
-let menu         = store.get("sg_menu", null) || (store.set("sg_menu", DEFAULT_MENU), DEFAULT_MENU);
+let menu = store.get("sg_menu", null);
+if(!menu){ menu = DEFAULT_MENU.map(d=>({...d})); store.set("sg_menu", menu); }
+/* migrate: add any new default dishes the user doesn't have yet (keeps their edits/additions) */
+if(store.get("sg_menu_v", 1) < MENU_VERSION){
+  const have = new Set(menu.map(m=>m.name.toLowerCase()));
+  DEFAULT_MENU.forEach(d=>{ if(!have.has(d.name.toLowerCase())) menu.push({...d}); });
+  store.set("sg_menu", menu);
+  store.set("sg_menu_v", MENU_VERSION);
+}
 let orders       = store.get("sg_orders", []);
 let reservations = store.get("sg_res", []);
 let myOrderIds   = store.get("sg_myorders", []);
@@ -50,7 +86,7 @@ let profile      = store.get("sg_profile", {});        // remembered name/phone/
 const $  = (s, el=document) => el.querySelector(s);
 const $$ = (s, el=document) => [...el.querySelectorAll(s)];
 const rupee = n => "₹" + Math.round(n).toLocaleString("en-IN");
-const emojiFor = c => ({Pizza:"🍕",Starters:"🍟",Burgers:"🍔",Mains:"🍛",Desserts:"🍰",Drinks:"🥤"}[c] || "🍴");
+const emojiFor = c => ({Pizza:"🍕",Starters:"🍟",Burgers:"🍔",Mains:"🍛",Desserts:"🍰",Drinks:"🥤","Rice & Noodles":"🍚",Biryani:"🍛",Breads:"🫓"}[c] || "🍴");
 const uid = () => Date.now() + "-" + Math.floor(performance.now()*1000 % 100000);
 
 /* ============================================================
