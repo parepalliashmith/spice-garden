@@ -829,16 +829,27 @@ const validPhone = p => /^\d{10}$/.test(p);
    ============================================================ */
 let pendingPhone = null, pendingRole = null;
 let fallbackCode = null;        // set only when backend is unreachable (offline demo)
+let serverOtpMode = "demo";     // learned from /api/health: demo | email | sms | twilio | fast2sms
 
-async function apiSendOtp(phone){
+/* ask the backend which OTP channel it's using, so the login can show an email field */
+async function loadOtpMode(){
+  try{
+    const r = await fetch("/api/health");
+    if(r.ok){ serverOtpMode = (await r.json()).otpMode || "demo"; }
+  }catch(_){ serverOtpMode = "demo"; }
+  $("#authEmailWrap").classList.toggle("hidden", serverOtpMode !== "email");
+}
+
+async function apiSendOtp(phone, email){
   try{
     const r = await fetch("/api/otp/send", {
       method:"POST", headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({ phone })
+      body: JSON.stringify({ phone, email })
     });
+    if(r.status === 400){ return { error: (await r.json()).error || "bad request" }; }
     if(!r.ok) throw new Error("send " + r.status);
     fallbackCode = null;
-    return await r.json();                 // { mode:"sms" } or { mode:"demo", code }
+    return await r.json();                 // { mode:"sms"|"email" } or { mode:"demo", code }
   }catch(_){
     fallbackCode = String(Math.floor(100000 + Math.random()*900000));
     return { mode:"demo", code: fallbackCode, offline:true };
@@ -883,17 +894,23 @@ $("#sendOtpBtn").onclick = async ()=>{
   const phone = cleanPhone($("#authPhone").value);
   const msg = $("#authMsg");
   if(!validPhone(phone)){ msg.className="auth-msg bad"; msg.textContent="Enter a valid 10-digit number"; return; }
+  const email = $("#authEmail").value.trim();
+  if(serverOtpMode === "email" && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){
+    msg.className="auth-msg bad"; msg.textContent="Enter a valid email to receive the code"; return;
+  }
   pendingPhone = phone; pendingRole = authRole;
   const btn = $("#sendOtpBtn"); btn.disabled = true; btn.textContent = "Sending…";
-  const res = await apiSendOtp(phone);
+  const res = await apiSendOtp(phone, email);
   btn.disabled = false; btn.textContent = "Send OTP";
-  $("#otpToPhone").textContent = "+91 " + phone;
+  if(res.error){ msg.className="auth-msg bad"; msg.textContent = res.error==="email required" ? "Please enter your email" : "Couldn't send the code"; return; }
   $("#authOtp").value = "";
   if(res.mode === "demo"){
+    $("#otpToPhone").textContent = "+91 " + phone;
     $("#demoOtp").className = "demo-otp show";
     $("#demoOtp").innerHTML = `Demo OTP: <strong>${res.code}</strong><br>`
-      + `<span class="muted small">${res.offline ? "offline demo" : "real SMS once a provider is configured"}</span>`;
+      + `<span class="muted small">${res.offline ? "offline demo" : "real OTP once a provider is configured"}</span>`;
   } else {
+    $("#otpToPhone").textContent = res.mode === "email" ? email : "+91 " + phone;
     $("#demoOtp").className = "demo-otp"; $("#demoOtp").innerHTML = "";
   }
   $("#authMsg2").textContent = ""; $("#authMsg2").className = "auth-msg";
@@ -1355,6 +1372,7 @@ updateStickyCart();
 attachVoice();
 startEtaTicker();
 updateOnline();
+loadOtpMode();   // learn whether the backend uses email/sms/demo
 
 /* auth gate: resume an existing session, or ask the user to log in */
 applySession();

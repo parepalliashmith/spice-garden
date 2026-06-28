@@ -20,11 +20,42 @@ const TW_SID    = process.env.TWILIO_ACCOUNT_SID;
 const TW_AUTH   = process.env.TWILIO_AUTH_TOKEN;
 const TW_VERIFY = process.env.TWILIO_VERIFY_SERVICE_SID;
 const F2S_KEY   = process.env.FAST2SMS_API_KEY;
+const BREVO_KEY  = process.env.BREVO_API_KEY;
+const RESEND_KEY = process.env.RESEND_API_KEY;
+const FROM_EMAIL = process.env.FROM_EMAIL || "onboarding@resend.dev";
 
 const useTwilio   = !!(TW_SID && TW_AUTH && TW_VERIFY);
 const useFast2sms = !useTwilio && !!F2S_KEY;
-const MODE = useTwilio ? "twilio" : useFast2sms ? "fast2sms" : "demo";
+const useEmail    = !useTwilio && !useFast2sms && !!(BREVO_KEY || RESEND_KEY);
+const MODE = useTwilio ? "twilio" : useFast2sms ? "fast2sms" : useEmail ? "email" : "demo";
 console.log("OTP provider mode:", MODE);
+
+/* send the code by email (free providers) */
+async function emailCode(email, code){
+  const subject = `Your Spice Garden code: ${code}`;
+  const html = `<div style="font-family:sans-serif">
+    <h2 style="color:#e0632a">Spice Garden</h2>
+    <p>Your login code is:</p>
+    <p style="font-size:30px;font-weight:bold;letter-spacing:4px">${code}</p>
+    <p style="color:#888">It expires in 5 minutes. If you didn't request this, ignore this email.</p></div>`;
+  if(BREVO_KEY){
+    const r = await fetch("https://api.brevo.com/v3/smtp/email", {
+      method:"POST",
+      headers:{ "api-key":BREVO_KEY, "Content-Type":"application/json", accept:"application/json" },
+      body: JSON.stringify({ sender:{ email:FROM_EMAIL, name:"Spice Garden" }, to:[{ email }], subject, htmlContent:html })
+    });
+    if(!r.ok) throw new Error("brevo " + r.status + " " + await r.text());
+    return true;
+  }
+  // Resend
+  const r = await fetch("https://api.resend.com/emails", {
+    method:"POST",
+    headers:{ Authorization:"Bearer "+RESEND_KEY, "Content-Type":"application/json" },
+    body: JSON.stringify({ from:`Spice Garden <${FROM_EMAIL}>`, to:[email], subject, html })
+  });
+  if(!r.ok) throw new Error("resend " + r.status + " " + await r.text());
+  return true;
+}
 
 /* in-memory OTP store (for demo + fast2sms; Twilio Verify keeps its own) */
 const otps = new Map();          // phone -> { code, expires, tries }
@@ -33,7 +64,7 @@ const gen6  = () => String(Math.floor(100000 + Math.random() * 900000));
 const clean = p => String(p || "").replace(/\D/g, "").slice(-10);
 const valid = p => /^\d{10}$/.test(p);
 
-async function sendOtp(phone){
+async function sendOtp(phone, email){
   if(useTwilio){
     const url = `https://verify.twilio.com/v2/Services/${TW_VERIFY}/Verifications`;
     const r = await fetch(url, {
@@ -53,6 +84,11 @@ async function sendOtp(phone){
     const r = await fetch(url);
     if(!r.ok) throw new Error("fast2sms send " + r.status + " " + await r.text());
     return { mode:"sms" };
+  }
+  if(useEmail){
+    if(!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ const e=new Error("email required"); e.code="NEED_EMAIL"; throw e; }
+    await emailCode(email, code);
+    return { mode:"email" };
   }
   return { mode:"demo", code };     // demo: hand the code back so the UI can show it
 }
@@ -108,11 +144,14 @@ http.createServer(async (req, res)=>{
   if(req.url === "/api/health"){ return json(res, 200, { ok:true, otpMode:MODE }); }
 
   if(req.method === "POST" && req.url === "/api/otp/send"){
-    const { phone } = await readBody(req);
+    const { phone, email } = await readBody(req);
     const p = clean(phone);
     if(!valid(p)) return json(res, 400, { error:"invalid phone" });
-    try { return json(res, 200, await sendOtp(p)); }
-    catch(e){ console.error(e.message); return json(res, 502, { error:"sms failed" }); }
+    try { return json(res, 200, await sendOtp(p, (email||"").trim())); }
+    catch(e){
+      if(e.code === "NEED_EMAIL") return json(res, 400, { error:"email required" });
+      console.error(e.message); return json(res, 502, { error:"send failed" });
+    }
   }
 
   if(req.method === "POST" && req.url === "/api/otp/verify"){

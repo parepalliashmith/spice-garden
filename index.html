@@ -51,6 +51,10 @@
         <span class="cc">+91</span>
         <input id="authPhone" type="tel" maxlength="10" inputmode="numeric" placeholder="10-digit number" autocomplete="off" />
       </div>
+      <div id="authEmailWrap" class="hidden">
+        <label class="auth-label">Email <span class="muted small">(the code is sent here)</span></label>
+        <input id="authEmail" type="email" class="auth-email" placeholder="you@example.com" autocomplete="email" />
+      </div>
       <button class="btn primary full" id="sendOtpBtn">Send OTP</button>
       <p class="auth-msg" id="authMsg"></p>
       <div class="role-note hidden" id="customerNote">🙋 New here? Just enter your number and start ordering.</div>

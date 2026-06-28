@@ -252,6 +252,7 @@ body.dark .auth-tab.active{background:#3a2a1f}
 .auth-phone .cc{padding:12px 12px;background:var(--bg);font-weight:700;border-right:1px solid var(--line)}
 .auth-phone input{flex:1;border:none;padding:12px;font-size:16px;background:transparent;color:var(--ink);outline:none}
 .otp-input{width:100%;border:1px solid var(--line);border-radius:12px;padding:14px;font-size:26px;letter-spacing:10px;text-align:center;margin-bottom:12px;background:var(--card);color:var(--ink)}
+.auth-email{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px;font-size:15px;margin-bottom:14px;background:var(--card);color:var(--ink)}
 .demo-otp{background:#fff7ee;border:1px dashed var(--brand);color:var(--brand);border-radius:10px;padding:10px;font-size:14px;text-align:center;margin-bottom:14px;display:none}
 .demo-otp.show{display:block}
 body.dark .demo-otp{background:#2c2117}
