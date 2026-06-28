@@ -81,7 +81,13 @@ TWILIO_VERIFY_SERVICE_SID = VA...
 ```
 FAST2SMS_API_KEY = ...
 ```
-Optional: `COUNTRY_CODE` (default `+91`).
+**Email OTP** (free, no DLT — code is emailed instead of texted)
+```
+BREVO_API_KEY = ...          # Brevo: 300 emails/day free, single-sender verify (no domain)
+FROM_EMAIL    = you@...       # a sender you verified in Brevo
+# or RESEND_API_KEY instead of BREVO_API_KEY
+```
+Optional: `COUNTRY_CODE` (default `+91`). When email mode is on, the login asks for an email and the code is sent there.
 
 Once a provider's keys are set, OTPs are texted for real and are **not** shown on screen.
 Check the mode any time at `/api/health`.
