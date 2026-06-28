@@ -1,8 +1,18 @@
-# Render Blueprint — deploys Spice Garden as a free static site.
-# In Render: New → Blueprint → connect this repo (or use New → Static Site manually).
+# Render Blueprint — Spice Garden as a Node Web Service (serves the app + OTP API).
+# In Render: New → Blueprint → connect this repo, OR New → Web Service (start command: node server.js).
+#
+# To turn on REAL SMS OTP, add ONE provider's env vars in the Render dashboard
+# (Service → Environment). Until then it runs in DEMO mode (code shown on screen).
+#
+#   Twilio Verify:  TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_VERIFY_SERVICE_SID
+#   Fast2SMS (IN):  FAST2SMS_API_KEY
 services:
   - type: web
     name: spice-garden
-    runtime: static
-    buildCommand: ""
-    staticPublishPath: .
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: COUNTRY_CODE
+        value: "+91"

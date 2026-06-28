@@ -823,24 +823,37 @@ const cleanPhone = s => (s||"").replace(/\D/g,"").slice(-10);
 const validPhone = p => /^\d{10}$/.test(p);
 
 /* ============================================================
-   OTP (DEMO — generates a code and shows it on screen.
-   In production this would be sent by SMS via a backend.)
+   OTP — talks to the backend (/api/otp/*).
+   If the backend isn't reachable (e.g. opened as a static file),
+   it falls back to a client-side demo code so login still works.
    ============================================================ */
-let otpStore = null;   // { phone, code, role, expires }
-function genCode(phone){
-  // deterministic-ish 6 digits from phone + a varying part (no real RNG needed for a demo)
-  const base = (Number(phone.slice(-6)) + (performance.now()|0)) % 1000000;
-  return String(base).padStart(6,"0");
+let pendingPhone = null, pendingRole = null;
+let fallbackCode = null;        // set only when backend is unreachable (offline demo)
+
+async function apiSendOtp(phone){
+  try{
+    const r = await fetch("/api/otp/send", {
+      method:"POST", headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({ phone })
+    });
+    if(!r.ok) throw new Error("send " + r.status);
+    fallbackCode = null;
+    return await r.json();                 // { mode:"sms" } or { mode:"demo", code }
+  }catch(_){
+    fallbackCode = String(Math.floor(100000 + Math.random()*900000));
+    return { mode:"demo", code: fallbackCode, offline:true };
+  }
 }
-function sendOtp(phone, intendedRole){
-  const code = genCode(phone);
-  otpStore = { phone, code, role:intendedRole, expires: Date.now()+5*60*1000 };
-  return code;   // demo: returned to show on screen
-}
-function checkOtp(phone, code){
-  if(!otpStore || otpStore.phone!==phone) return false;
-  if(Date.now() > otpStore.expires) return false;
-  return otpStore.code === code;
+async function apiVerifyOtp(phone, code){
+  if(fallbackCode != null) return code === fallbackCode;   // offline demo
+  try{
+    const r = await fetch("/api/otp/verify", {
+      method:"POST", headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({ phone, code })
+    });
+    if(!r.ok) return false;
+    return !!(await r.json()).ok;
+  }catch(_){ return false; }
 }
 
 /* ============================================================
@@ -866,24 +879,34 @@ function showAuthStep(which){
 function openGate(){ $("#authGate").classList.add("show"); showAuthStep("phone"); updateRoleNotes(); }
 function closeGate(){ $("#authGate").classList.remove("show"); }
 
-$("#sendOtpBtn").onclick = ()=>{
+$("#sendOtpBtn").onclick = async ()=>{
   const phone = cleanPhone($("#authPhone").value);
   const msg = $("#authMsg");
   if(!validPhone(phone)){ msg.className="auth-msg bad"; msg.textContent="Enter a valid 10-digit number"; return; }
-  const code = sendOtp(phone, authRole);
-  $("#otpToPhone").textContent = "+91 "+phone;
-  $("#authOtp").value="";
-  $("#demoOtp").className="demo-otp show";
-  $("#demoOtp").innerHTML = `Demo OTP: <strong>${code}</strong><br><span class="muted small">(in production this is texted to the phone)</span>`;
-  $("#authMsg2").textContent=""; $("#authMsg2").className="auth-msg";
+  pendingPhone = phone; pendingRole = authRole;
+  const btn = $("#sendOtpBtn"); btn.disabled = true; btn.textContent = "Sending…";
+  const res = await apiSendOtp(phone);
+  btn.disabled = false; btn.textContent = "Send OTP";
+  $("#otpToPhone").textContent = "+91 " + phone;
+  $("#authOtp").value = "";
+  if(res.mode === "demo"){
+    $("#demoOtp").className = "demo-otp show";
+    $("#demoOtp").innerHTML = `Demo OTP: <strong>${res.code}</strong><br>`
+      + `<span class="muted small">${res.offline ? "offline demo" : "real SMS once a provider is configured"}</span>`;
+  } else {
+    $("#demoOtp").className = "demo-otp"; $("#demoOtp").innerHTML = "";
+  }
+  $("#authMsg2").textContent = ""; $("#authMsg2").className = "auth-msg";
   showAuthStep("otp");
 };
 $("#otpBackBtn").onclick = ()=> showAuthStep("phone");
-$("#verifyOtpBtn").onclick = ()=>{
-  const phone = otpStore ? otpStore.phone : "";
+$("#verifyOtpBtn").onclick = async ()=>{
   const msg = $("#authMsg2");
-  if(!checkOtp(phone, $("#authOtp").value.trim())){ msg.className="auth-msg bad"; msg.textContent="Wrong or expired code"; return; }
-  loginVerified(phone, otpStore.role);
+  const btn = $("#verifyOtpBtn"); btn.disabled = true; btn.textContent = "Verifying…";
+  const ok = await apiVerifyOtp(pendingPhone, $("#authOtp").value.trim());
+  btn.disabled = false; btn.textContent = "Verify & Continue";
+  if(!ok){ msg.className="auth-msg bad"; msg.textContent="Wrong or expired code"; return; }
+  loginVerified(pendingPhone, pendingRole);
 };
 
 /* called after OTP is confirmed */

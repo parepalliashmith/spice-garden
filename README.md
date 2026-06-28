@@ -52,6 +52,40 @@ This is a static site (`index.html`, `styles.css`, `app.js`), so any static host
 
 ---
 
+## 📱 Real SMS OTP (backend)
+
+`server.js` is a tiny Node backend that serves the app **and** handles OTP at
+`/api/otp/send` and `/api/otp/verify`. It auto-selects an SMS provider from env vars;
+with none set it runs in **DEMO mode** (code shown on screen).
+
+### Run locally
+```
+npm start        # serves on http://localhost:3000
+```
+
+### Deploy on Render as a Web Service
+1. Render → **New → Web Service** → connect this repo (or **New → Blueprint** — `render.yaml` is included).
+2. **Start command:** `node server.js`  ·  **Build command:** `npm install`
+3. (A static site can't run a backend — this must be a Web Service.)
+
+### Turn on real SMS — add env vars in Render (Service → Environment)
+Pick ONE provider:
+
+**Twilio Verify** (global)
+```
+TWILIO_ACCOUNT_SID        = AC...
+TWILIO_AUTH_TOKEN         = ...
+TWILIO_VERIFY_SERVICE_SID = VA...
+```
+**Fast2SMS** (India, simplest)
+```
+FAST2SMS_API_KEY = ...
+```
+Optional: `COUNTRY_CODE` (default `+91`).
+
+Once a provider's keys are set, OTPs are texted for real and are **not** shown on screen.
+Check the mode any time at `/api/health`.
+
 ## ⚠️ Notes
 - The online payment is a **demo** — it simulates a successful payment and charges no real money. For real payments you'd integrate a gateway (Razorpay / Stripe) on a backend.
 - Logins are stored in the browser, fine for a demo. For real multi-device security, add a server-side login.
